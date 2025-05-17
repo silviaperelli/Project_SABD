@@ -1,0 +1,13 @@
+
+<configuration>
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+    </property>
+
+    <property>
+        <name>dfs.permissions.enabled</name>
+        <value>false</value>
+    </property>
+</configuration>
+

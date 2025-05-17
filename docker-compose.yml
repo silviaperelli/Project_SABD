@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    restart: always
+    ports:
+      - "9870:9870" # Namenode Web UI
+      - "9000:9000" # Namenode RPC
+    volumes:
+      - namenode_data:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    networks:
+      - sabd_net
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    restart: always
+    volumes:
+      - datanode_data:/hadoop/dfs/data
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870 # Wait for namenode to be up
+    depends_on:
+      - namenode
+    networks:
+      - sabd_net
+
+  nifi:
+    image: apache/nifi:1.25.0 # Or latest, but pinning version is good practice
+    container_name: nifi
+    restart: always
+    ports:
+      - "8443:8443" # NiFi Web UI (HTTPS by default in recent versions)
+    volumes:
+      - ./nifi_conf/templates:/opt/nifi/nifi-current/conf/templates
+      - ./hadoop_conf:/opt/nifi/hadoop_conf # Mount HDFS configs
+      - nifi_data_conf:/opt/nifi/nifi-current/conf
+      - nifi_data_database:/opt/nifi/nifi-current/database_repository
+      - nifi_data_flowfile:/opt/nifi/nifi-current/flowfile_repository
+      - nifi_data_content:/opt/nifi/nifi-current/content_repository
+      - nifi_data_provenance:/opt/nifi/nifi-current/provenance_repository
+      - nifi_data_state:/opt/nifi/nifi-current/state
+      - nifi_data_logs:/opt/nifi/nifi-current/logs
+    environment:
+      - NIFI_WEB_HTTPS_PORT=8443
+      - NIFI_SENSITIVE_PROPS_KEY= VQHGn0eLMqfDBaElpeZGh3atsh9TwI4s
+    depends_on:
+      - namenode
+      - datanode
+    networks:
+      - sabd_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-k", "https://localhost:8443/nifi-api/system-diagnostics"] # -k per insecure HTTPS
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  namenode_data:
+  datanode_data:
+  nifi_data_conf:
+  nifi_data_database:
+  nifi_data_flowfile:
+  nifi_data_content:
+  nifi_data_provenance:
+  nifi_data_state:
+  nifi_data_logs:
+
+networks:
+  sabd_net:
+    driver: bridge
