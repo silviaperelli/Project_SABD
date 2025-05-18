@@ -3,6 +3,7 @@ services:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     container_name: namenode
     restart: always
+    hostname: namenode
     ports:
       - "9870:9870" # Namenode Web UI
       - "8020:8020" # Namenode RPC
@@ -10,6 +11,7 @@ services:
       - namenode_data:/hadoop/dfs/name
       - ./hadoop_init_scripts:/opt/hadoop_init_scripts
       - ./namenode-entrypoint.sh:/custom-entrypoint.sh
+      - ./hadoop_conf:/opt/hadoop/etc/hadoop
     entrypoint: /custom-entrypoint.sh
     environment:
       - CLUSTER_NAME=test
@@ -20,8 +22,10 @@ services:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode
     restart: always
+    hostname: datanode
     volumes:
       - datanode_data:/hadoop/dfs/data
+      - ./hadoop_conf:/opt/hadoop/etc/hadoop
     environment:
       - SERVICE_PRECONDITION=namenode:9870 # Wait for namenode to be up
       - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
@@ -59,6 +63,102 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+
+  spark-master:
+      image: bitnami/spark:3.5
+      container_name: spark-master
+      hostname: spark-master
+      ports:
+        - "8080:8080" # Spark Master Web UI
+        - "7077:7077" # Spark Master RPC
+      volumes:
+        - ./spark_apps:/opt/bitnami/spark/apps
+        - ./spark_data:/opt/bitnami/spark/data
+        - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop_conf
+      environment:
+        - SPARK_MODE=master
+        - SPARK_RPC_AUTHENTICATION_ENABLED=no
+        - SPARK_RPC_ENCRYPTION_ENABLED=no
+        - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+        - SPARK_SSL_ENABLED=no
+        - SPARK_USER=root # Per permessi di scrittura in HDFS
+        - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop_conf
+      networks:
+        - sabd_net
+      depends_on:
+        - namenode
+
+  spark-worker-1: # Worker 1
+      image: bitnami/spark:3.5
+      container_name: spark-worker-1
+      hostname: spark-worker-1
+      volumes:
+        - ./spark_apps:/opt/bitnami/spark/apps
+        - ./spark_data:/opt/bitnami/spark/data
+        - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop_conf
+      environment:
+        - SPARK_MODE=worker
+        - SPARK_MASTER_URL=spark://spark-master:7077
+        - SPARK_WORKER_MEMORY=1G
+        - SPARK_WORKER_CORES=1
+        - SPARK_RPC_AUTHENTICATION_ENABLED=no
+        - SPARK_RPC_ENCRYPTION_ENABLED=no
+        - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+        - SPARK_SSL_ENABLED=no
+        - SPARK_USER=root
+        - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop_conf
+      networks:
+        - sabd_net
+      depends_on:
+        - spark-master
+
+  spark-worker-2: # Worker 2
+      image: bitnami/spark:3.5
+      container_name: spark-worker-2
+      hostname: spark-worker-2
+      volumes:
+        - ./spark_apps:/opt/bitnami/spark/apps
+        - ./spark_data:/opt/bitnami/spark/data
+        - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop_conf
+      environment:
+        - SPARK_MODE=worker
+        - SPARK_MASTER_URL=spark://spark-master:7077
+        - SPARK_WORKER_MEMORY=1G
+        - SPARK_WORKER_CORES=1
+        - SPARK_RPC_AUTHENTICATION_ENABLED=no
+        - SPARK_RPC_ENCRYPTION_ENABLED=no
+        - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+        - SPARK_SSL_ENABLED=no
+        - SPARK_USER=root
+        - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop_conf
+      networks:
+        - sabd_net
+      depends_on:
+        - spark-master
+
+  spark-worker-3: # Worker 3
+      image: bitnami/spark:3.5
+      container_name: spark-worker-3
+      hostname: spark-worker-3
+      volumes:
+        - ./spark_apps:/opt/bitnami/spark/apps
+        - ./spark_data:/opt/bitnami/spark/data
+        - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop_conf
+      environment:
+        - SPARK_MODE=worker
+        - SPARK_MASTER_URL=spark://spark-master:7077
+        - SPARK_WORKER_MEMORY=1G
+        - SPARK_WORKER_CORES=1
+        - SPARK_RPC_AUTHENTICATION_ENABLED=no
+        - SPARK_RPC_ENCRYPTION_ENABLED=no
+        - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+        - SPARK_SSL_ENABLED=no
+        - SPARK_USER=root
+        - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop_conf
+      networks:
+        - sabd_net
+      depends_on:
+        - spark-master
 
 volumes:
   namenode_data:
