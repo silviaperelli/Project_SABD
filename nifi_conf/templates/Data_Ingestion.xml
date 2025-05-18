@@ -1,136 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <template encoding-version="1.3">
     <description></description>
-    <groupId>df25b0c3-0196-1000-6536-9db5274f6254</groupId>
-    <name>Data_ingestion</name>
+    <groupId>df2ed1f6-0196-1000-70c6-a91f3f030209</groupId>
+    <name>Data_Ingestion</name>
     <snippet>
         <processGroups>
-            <id>f7936d6b-3a50-3913-0000-000000000000</id>
-            <parentGroupId>0806ebbe-48f5-3582-0000-000000000000</parentGroupId>
+            <id>59a8c6c5-61e5-3ebb-0000-000000000000</id>
+            <parentGroupId>d6475195-dbb7-3499-0000-000000000000</parentGroupId>
             <position>
                 <x>0.0</x>
                 <y>0.0</y>
             </position>
+            <versionedComponentId>59a8c6c5-61e5-3ebb-88e1-8f2e6f46e5e3</versionedComponentId>
             <comments></comments>
             <contents>
                 <connections>
-                    <id>01e3b2f4-455f-3f94-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
-                    <versionedComponentId>558607e8-5639-3ec4-918f-695b9933b6ac</versionedComponentId>
+                    <id>3711ee79-7440-3997-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
+                    <versionedComponentId>3711ee79-7440-3997-ae2e-7f496de10ac3</versionedComponentId>
                     <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
                     <backPressureObjectThreshold>10000</backPressureObjectThreshold>
                     <destination>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>5d272f5c-6fa2-3e77-0000-000000000000</id>
-                        <type>PROCESSOR</type>
-                        <versionedComponentId>d5dc6c32-224c-321b-94e4-433005edde2a</versionedComponentId>
-                    </destination>
-                    <flowFileExpiration>0 sec</flowFileExpiration>
-                    <labelIndex>0</labelIndex>
-                    <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
-                    <loadBalancePartitionAttribute></loadBalancePartitionAttribute>
-                    <loadBalanceStatus>LOAD_BALANCE_NOT_CONFIGURED</loadBalanceStatus>
-                    <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
-                    <name></name>
-                    <selectedRelationships>selected_columns</selectedRelationships>
-                    <source>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>b8025f12-60a0-3184-0000-000000000000</id>
-                        <type>PROCESSOR</type>
-                        <versionedComponentId>2716a0af-6333-3e73-8967-4ca5ba8a8e29</versionedComponentId>
-                    </source>
-                    <zIndex>3</zIndex>
-                </connections>
-                <connections>
-                    <id>4d6dc26f-819d-3efd-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
-                    <versionedComponentId>6ee2b2c1-e446-36ba-ba6b-c85057a814ab</versionedComponentId>
-                    <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
-                    <backPressureObjectThreshold>10000</backPressureObjectThreshold>
-                    <destination>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>d90b5e46-ca7f-3299-0000-000000000000</id>
-                        <type>PROCESSOR</type>
-                        <versionedComponentId>52d80f85-84b0-3428-bc14-b57a7dc6128e</versionedComponentId>
-                    </destination>
-                    <flowFileExpiration>0 sec</flowFileExpiration>
-                    <labelIndex>0</labelIndex>
-                    <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
-                    <loadBalancePartitionAttribute></loadBalancePartitionAttribute>
-                    <loadBalanceStatus>LOAD_BALANCE_NOT_CONFIGURED</loadBalanceStatus>
-                    <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
-                    <name></name>
-                    <selectedRelationships>success</selectedRelationships>
-                    <source>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>5d272f5c-6fa2-3e77-0000-000000000000</id>
-                        <type>PROCESSOR</type>
-                        <versionedComponentId>d5dc6c32-224c-321b-94e4-433005edde2a</versionedComponentId>
-                    </source>
-                    <zIndex>8</zIndex>
-                </connections>
-                <connections>
-                    <id>9c720a37-6ffa-331a-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
-                    <versionedComponentId>926228ee-62bf-37f4-b16b-627aa63b32af</versionedComponentId>
-                    <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
-                    <backPressureObjectThreshold>10000</backPressureObjectThreshold>
-                    <destination>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>8cc502d3-2ea6-3e1e-0000-000000000000</id>
-                        <type>PROCESSOR</type>
-                        <versionedComponentId>7968d6f0-1f10-328b-95cb-c9b1d87d38db</versionedComponentId>
-                    </destination>
-                    <flowFileExpiration>0 sec</flowFileExpiration>
-                    <labelIndex>0</labelIndex>
-                    <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
-                    <loadBalancePartitionAttribute></loadBalancePartitionAttribute>
-                    <loadBalanceStatus>LOAD_BALANCE_NOT_CONFIGURED</loadBalanceStatus>
-                    <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
-                    <name></name>
-                    <selectedRelationships>success</selectedRelationships>
-                    <source>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>ac1b9571-7d28-3e2c-0000-000000000000</id>
-                        <type>PROCESSOR</type>
-                        <versionedComponentId>97da6e36-b6c0-3373-a973-d13f0622ad86</versionedComponentId>
-                    </source>
-                    <zIndex>5</zIndex>
-                </connections>
-                <connections>
-                    <id>a85f2424-0b6d-3e37-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
-                    <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
-                    <backPressureObjectThreshold>10000</backPressureObjectThreshold>
-                    <destination>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>c570d795-04f3-3c7d-0000-000000000000</id>
-                        <type>PROCESSOR</type>
-                    </destination>
-                    <flowFileExpiration>0 sec</flowFileExpiration>
-                    <labelIndex>1</labelIndex>
-                    <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
-                    <loadBalancePartitionAttribute></loadBalancePartitionAttribute>
-                    <loadBalanceStatus>LOAD_BALANCE_NOT_CONFIGURED</loadBalanceStatus>
-                    <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
-                    <name></name>
-                    <selectedRelationships>success</selectedRelationships>
-                    <source>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>8cc502d3-2ea6-3e1e-0000-000000000000</id>
-                        <type>PROCESSOR</type>
-                        <versionedComponentId>7968d6f0-1f10-328b-95cb-c9b1d87d38db</versionedComponentId>
-                    </source>
-                    <zIndex>0</zIndex>
-                </connections>
-                <connections>
-                    <id>c68525dc-86e0-33d8-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
-                    <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
-                    <backPressureObjectThreshold>10000</backPressureObjectThreshold>
-                    <destination>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>b8025f12-60a0-3184-0000-000000000000</id>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>3115b00d-dc23-3e07-0000-000000000000</id>
                         <type>PROCESSOR</type>
                         <versionedComponentId>2716a0af-6333-3e73-8967-4ca5ba8a8e29</versionedComponentId>
                     </destination>
@@ -143,15 +35,128 @@
                     <name></name>
                     <selectedRelationships>Response</selectedRelationships>
                     <source>
-                        <groupId>f7936d6b-3a50-3913-0000-000000000000</groupId>
-                        <id>c570d795-04f3-3c7d-0000-000000000000</id>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>d8ba5007-5bdc-31bf-0000-000000000000</id>
                         <type>PROCESSOR</type>
+                        <versionedComponentId>d8ba5007-5bdc-31bf-851e-085fae79f965</versionedComponentId>
+                    </source>
+                    <zIndex>0</zIndex>
+                </connections>
+                <connections>
+                    <id>551b2a9f-7611-337d-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
+                    <versionedComponentId>551b2a9f-7611-337d-b004-a06be0d2673a</versionedComponentId>
+                    <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                    <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                    <destination>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>d8ba5007-5bdc-31bf-0000-000000000000</id>
+                        <type>PROCESSOR</type>
+                        <versionedComponentId>d8ba5007-5bdc-31bf-851e-085fae79f965</versionedComponentId>
+                    </destination>
+                    <flowFileExpiration>0 sec</flowFileExpiration>
+                    <labelIndex>1</labelIndex>
+                    <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+                    <loadBalancePartitionAttribute></loadBalancePartitionAttribute>
+                    <loadBalanceStatus>LOAD_BALANCE_NOT_CONFIGURED</loadBalanceStatus>
+                    <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                    <name></name>
+                    <selectedRelationships>success</selectedRelationships>
+                    <source>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>e67dc5c8-b3f4-3ce8-0000-000000000000</id>
+                        <type>PROCESSOR</type>
+                        <versionedComponentId>7968d6f0-1f10-328b-95cb-c9b1d87d38db</versionedComponentId>
+                    </source>
+                    <zIndex>0</zIndex>
+                </connections>
+                <connections>
+                    <id>b5381406-93d2-3b7a-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
+                    <versionedComponentId>926228ee-62bf-37f4-b16b-627aa63b32af</versionedComponentId>
+                    <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                    <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                    <destination>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>e67dc5c8-b3f4-3ce8-0000-000000000000</id>
+                        <type>PROCESSOR</type>
+                        <versionedComponentId>7968d6f0-1f10-328b-95cb-c9b1d87d38db</versionedComponentId>
+                    </destination>
+                    <flowFileExpiration>0 sec</flowFileExpiration>
+                    <labelIndex>1</labelIndex>
+                    <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+                    <loadBalancePartitionAttribute></loadBalancePartitionAttribute>
+                    <loadBalanceStatus>LOAD_BALANCE_NOT_CONFIGURED</loadBalanceStatus>
+                    <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                    <name></name>
+                    <selectedRelationships>success</selectedRelationships>
+                    <source>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>93277204-189f-3ac0-0000-000000000000</id>
+                        <type>PROCESSOR</type>
+                        <versionedComponentId>97da6e36-b6c0-3373-a973-d13f0622ad86</versionedComponentId>
+                    </source>
+                    <zIndex>0</zIndex>
+                </connections>
+                <connections>
+                    <id>d1ff8e18-c0b6-3d17-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
+                    <versionedComponentId>6ee2b2c1-e446-36ba-ba6b-c85057a814ab</versionedComponentId>
+                    <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                    <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                    <destination>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>6276a589-4eb6-3a01-0000-000000000000</id>
+                        <type>PROCESSOR</type>
+                        <versionedComponentId>52d80f85-84b0-3428-bc14-b57a7dc6128e</versionedComponentId>
+                    </destination>
+                    <flowFileExpiration>0 sec</flowFileExpiration>
+                    <labelIndex>1</labelIndex>
+                    <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+                    <loadBalancePartitionAttribute></loadBalancePartitionAttribute>
+                    <loadBalanceStatus>LOAD_BALANCE_NOT_CONFIGURED</loadBalanceStatus>
+                    <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                    <name></name>
+                    <selectedRelationships>success</selectedRelationships>
+                    <source>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>ba09de03-255d-3986-0000-000000000000</id>
+                        <type>PROCESSOR</type>
+                        <versionedComponentId>d5dc6c32-224c-321b-94e4-433005edde2a</versionedComponentId>
+                    </source>
+                    <zIndex>0</zIndex>
+                </connections>
+                <connections>
+                    <id>e2835a3f-52c9-31c7-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
+                    <versionedComponentId>558607e8-5639-3ec4-918f-695b9933b6ac</versionedComponentId>
+                    <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                    <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                    <destination>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>ba09de03-255d-3986-0000-000000000000</id>
+                        <type>PROCESSOR</type>
+                        <versionedComponentId>d5dc6c32-224c-321b-94e4-433005edde2a</versionedComponentId>
+                    </destination>
+                    <flowFileExpiration>0 sec</flowFileExpiration>
+                    <labelIndex>1</labelIndex>
+                    <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+                    <loadBalancePartitionAttribute></loadBalancePartitionAttribute>
+                    <loadBalanceStatus>LOAD_BALANCE_NOT_CONFIGURED</loadBalanceStatus>
+                    <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                    <name></name>
+                    <selectedRelationships>selected_columns</selectedRelationships>
+                    <source>
+                        <groupId>59a8c6c5-61e5-3ebb-0000-000000000000</groupId>
+                        <id>3115b00d-dc23-3e07-0000-000000000000</id>
+                        <type>PROCESSOR</type>
+                        <versionedComponentId>2716a0af-6333-3e73-8967-4ca5ba8a8e29</versionedComponentId>
                     </source>
                     <zIndex>0</zIndex>
                 </connections>
                 <controllerServices>
-                    <id>a5d3e6d9-4028-3cbe-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
+                    <id>560f29b5-a18c-30c3-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
                     <versionedComponentId>479ed1b1-edc0-3363-aa22-34f224466615</versionedComponentId>
                     <bulletinLevel>WARN</bulletinLevel>
                     <bundle>
@@ -452,8 +457,8 @@
                     <type>org.apache.nifi.csv.CSVReader</type>
                 </controllerServices>
                 <controllerServices>
-                    <id>d43bee78-03be-3e35-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
+                    <id>86618243-41cb-369d-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
                     <versionedComponentId>ee361bcb-7c8c-3285-a632-a4c187b0ceea</versionedComponentId>
                     <bulletinLevel>WARN</bulletinLevel>
                     <bundle>
@@ -700,15 +705,15 @@
                     <type>org.apache.nifi.parquet.ParquetRecordSetWriter</type>
                 </controllerServices>
                 <processors>
-                    <id>5d272f5c-6fa2-3e77-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
+                    <id>3115b00d-dc23-3e07-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
                     <position>
-                        <x>96.0</x>
-                        <y>-24.0</y>
+                        <x>-592.0</x>
+                        <y>-16.0</y>
                     </position>
-                    <versionedComponentId>d5dc6c32-224c-321b-94e4-433005edde2a</versionedComponentId>
+                    <versionedComponentId>2716a0af-6333-3e73-8967-4ca5ba8a8e29</versionedComponentId>
                     <bundle>
-                        <artifact>nifi-update-attribute-nar</artifact>
+                        <artifact>nifi-standard-nar</artifact>
                         <group>org.apache.nifi</group>
                         <version>1.25.0</version>
                     </bundle>
@@ -719,118 +724,47 @@
                         <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
                         <descriptors>
                             <entry>
-<key>Delete Attributes Expression</key>
+<key>record-reader</key>
 <value>
-    <name>Delete Attributes Expression</name>
+    <identifiesControllerService>org.apache.nifi.serialization.RecordReaderFactory</identifiesControllerService>
+    <name>record-reader</name>
 </value>
                             </entry>
                             <entry>
-<key>Store State</key>
+<key>record-writer</key>
 <value>
-    <name>Store State</name>
+    <identifiesControllerService>org.apache.nifi.serialization.RecordSetWriterFactory</identifiesControllerService>
+    <name>record-writer</name>
 </value>
                             </entry>
                             <entry>
-<key>Stateful Variables Initial Value</key>
+<key>include-zero-record-flowfiles</key>
 <value>
-    <name>Stateful Variables Initial Value</name>
+    <name>include-zero-record-flowfiles</name>
 </value>
                             </entry>
                             <entry>
-<key>canonical-value-lookup-cache-size</key>
+<key>cache-schema</key>
 <value>
-    <name>canonical-value-lookup-cache-size</name>
+    <name>cache-schema</name>
 </value>
                             </entry>
                             <entry>
-<key>filename</key>
+<key>dbf-default-precision</key>
 <value>
-    <name>filename</name>
-</value>
-                            </entry>
-                        </descriptors>
-                        <executionNode>ALL</executionNode>
-                        <lossTolerant>false</lossTolerant>
-                        <maxBackoffPeriod>10 mins</maxBackoffPeriod>
-                        <penaltyDuration>30 sec</penaltyDuration>
-                        <properties>
-                            <entry>
-<key>Delete Attributes Expression</key>
-                            </entry>
-                            <entry>
-<key>Store State</key>
-<value>Do not store state</value>
-                            </entry>
-                            <entry>
-<key>Stateful Variables Initial Value</key>
-                            </entry>
-                            <entry>
-<key>canonical-value-lookup-cache-size</key>
-<value>100</value>
-                            </entry>
-                            <entry>
-<key>filename</key>
-<value>${filename:substringBeforeLast('.')}.parquet</value>
-                            </entry>
-                        </properties>
-                        <retryCount>10</retryCount>
-                        <runDurationMillis>25</runDurationMillis>
-                        <schedulingPeriod>0 sec</schedulingPeriod>
-                        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
-                        <yieldDuration>1 sec</yieldDuration>
-                    </config>
-                    <executionNodeRestricted>false</executionNodeRestricted>
-                    <name>Set Parquet Filename</name>
-                    <relationships>
-                        <autoTerminate>false</autoTerminate>
-                        <name>success</name>
-                        <retry>false</retry>
-                    </relationships>
-                    <state>STOPPED</state>
-                    <style/>
-                    <type>org.apache.nifi.processors.attributes.UpdateAttribute</type>
-                </processors>
-                <processors>
-                    <id>8cc502d3-2ea6-3e1e-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
-                    <position>
-                        <x>-1240.0</x>
-                        <y>288.0</y>
-                    </position>
-                    <versionedComponentId>7968d6f0-1f10-328b-95cb-c9b1d87d38db</versionedComponentId>
-                    <bundle>
-                        <artifact>nifi-scripting-nar</artifact>
-                        <group>org.apache.nifi</group>
-                        <version>1.25.0</version>
-                    </bundle>
-                    <config>
-                        <backoffMechanism>PENALIZE_FLOWFILE</backoffMechanism>
-                        <bulletinLevel>WARN</bulletinLevel>
-                        <comments></comments>
-                        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
-                        <descriptors>
-                            <entry>
-<key>Script Engine</key>
-<value>
-    <name>Script Engine</name>
+    <name>dbf-default-precision</name>
 </value>
                             </entry>
                             <entry>
-<key>Script File</key>
+<key>dbf-default-scale</key>
 <value>
-    <name>Script File</name>
+    <name>dbf-default-scale</name>
 </value>
                             </entry>
                             <entry>
-<key>Script Body</key>
+<key>selected_columns</key>
 <value>
-    <name>Script Body</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Module Directory</key>
-<value>
-    <name>Module Directory</name>
+    <name>selected_columns</name>
 </value>
                             </entry>
                         </descriptors>
@@ -840,50 +774,39 @@
                         <penaltyDuration>30 sec</penaltyDuration>
                         <properties>
                             <entry>
-<key>Script Engine</key>
-<value>Groovy</value>
+<key>record-reader</key>
+<value>560f29b5-a18c-30c3-0000-000000000000</value>
                             </entry>
                             <entry>
-<key>Script File</key>
+<key>record-writer</key>
+<value>86618243-41cb-369d-0000-000000000000</value>
                             </entry>
                             <entry>
-<key>Script Body</key>
-<value>import org.apache.nifi.processor.io.OutputStreamCallback
-import java.nio.charset.StandardCharsets
-
-def flowFile = session.get()
-if(!flowFile) return
-
-def baseUrlDatePart = "https://data.electricitymaps.com/2025-04-03" 
-def suffix = "_hourly.csv"
-def zones = [
-    "IT-CNO", "IT-CSO", "IT-NO", "IT-SAR", "IT-SIC", "IT-SO",
-    "SE-SE1", "SE-SE2", "SE-SE3", "SE-SE4"
-]
-def years = ["2024", "2023", "2022", "2021"]
-
-zones.each { zone -&gt;
-    years.each { year -&gt;
-        def filenamePart = "${zone}_${year}${suffix}"
-        def downloadUrl = "${baseUrlDatePart}/${filenamePart}"
-
-        def newFlowFile = session.create(flowFile) 
-        newFlowFile = session.putAttribute(newFlowFile, "download.url", downloadUrl)
-        newFlowFile = session.putAttribute(newFlowFile, "data.zone", zone)
-        newFlowFile = session.putAttribute(newFlowFile, "data.year", year)
-        newFlowFile = session.putAttribute(newFlowFile, "filename", filenamePart) 
-
-        newFlowFile = session.write(newFlowFile, { outputStream -&gt;
-            outputStream.write(downloadUrl.getBytes(StandardCharsets.UTF_8))
-        } as OutputStreamCallback)
-        
-        session.transfer(newFlowFile, ScriptingComponentUtils.REL_SUCCESS)
-    }
-}
-session.remove(flowFile) </value>
+<key>include-zero-record-flowfiles</key>
+<value>true</value>
                             </entry>
                             <entry>
-<key>Module Directory</key>
+<key>cache-schema</key>
+<value>true</value>
+                            </entry>
+                            <entry>
+<key>dbf-default-precision</key>
+<value>10</value>
+                            </entry>
+                            <entry>
+<key>dbf-default-scale</key>
+<value>0</value>
+                            </entry>
+                            <entry>
+<key>selected_columns</key>
+<value>SELECT
+  "Datetime (UTC)",
+  "Country",
+  "Zone name",
+  "Zone id",
+  "Carbon intensity gCO₂eq/kWh (direct)",
+  "Carbon-free energy percentage (CFE%)"
+FROM FLOWFILE</value>
                             </entry>
                         </properties>
                         <retryCount>10</retryCount>
@@ -893,24 +816,257 @@ session.remove(flowFile) </value>
                         <yieldDuration>1 sec</yieldDuration>
                     </config>
                     <executionNodeRestricted>false</executionNodeRestricted>
-                    <name>ExecuteScript</name>
+                    <name>Select Columns &amp; Convert to Parquet</name>
                     <relationships>
                         <autoTerminate>true</autoTerminate>
                         <name>failure</name>
                         <retry>false</retry>
                     </relationships>
                     <relationships>
+                        <autoTerminate>true</autoTerminate>
+                        <name>original</name>
+                        <retry>false</retry>
+                    </relationships>
+                    <relationships>
                         <autoTerminate>false</autoTerminate>
+                        <name>selected_columns</name>
+                        <retry>false</retry>
+                    </relationships>
+                    <state>RUNNING</state>
+                    <style/>
+                    <type>org.apache.nifi.processors.standard.QueryRecord</type>
+                </processors>
+                <processors>
+                    <id>6276a589-4eb6-3a01-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
+                    <position>
+                        <x>104.0</x>
+                        <y>296.0</y>
+                    </position>
+                    <versionedComponentId>52d80f85-84b0-3428-bc14-b57a7dc6128e</versionedComponentId>
+                    <bundle>
+                        <artifact>nifi-hadoop-nar</artifact>
+                        <group>org.apache.nifi</group>
+                        <version>1.25.0</version>
+                    </bundle>
+                    <config>
+                        <backoffMechanism>PENALIZE_FLOWFILE</backoffMechanism>
+                        <bulletinLevel>WARN</bulletinLevel>
+                        <comments></comments>
+                        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                        <descriptors>
+                            <entry>
+<key>Hadoop Configuration Resources</key>
+<value>
+    <name>Hadoop Configuration Resources</name>
+</value>
+                            </entry>
+                            <entry>
+<key>kerberos-credentials-service</key>
+<value>
+    <identifiesControllerService>org.apache.nifi.kerberos.KerberosCredentialsService</identifiesControllerService>
+    <name>kerberos-credentials-service</name>
+</value>
+                            </entry>
+                            <entry>
+<key>kerberos-user-service</key>
+<value>
+    <identifiesControllerService>org.apache.nifi.kerberos.KerberosUserService</identifiesControllerService>
+    <name>kerberos-user-service</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Kerberos Principal</key>
+<value>
+    <name>Kerberos Principal</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Kerberos Keytab</key>
+<value>
+    <name>Kerberos Keytab</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Kerberos Password</key>
+<value>
+    <name>Kerberos Password</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Kerberos Relogin Period</key>
+<value>
+    <name>Kerberos Relogin Period</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Additional Classpath Resources</key>
+<value>
+    <name>Additional Classpath Resources</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Directory</key>
+<value>
+    <name>Directory</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Conflict Resolution Strategy</key>
+<value>
+    <name>Conflict Resolution Strategy</name>
+</value>
+                            </entry>
+                            <entry>
+<key>writing-strategy</key>
+<value>
+    <name>writing-strategy</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Block Size</key>
+<value>
+    <name>Block Size</name>
+</value>
+                            </entry>
+                            <entry>
+<key>IO Buffer Size</key>
+<value>
+    <name>IO Buffer Size</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Replication</key>
+<value>
+    <name>Replication</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Permissions umask</key>
+<value>
+    <name>Permissions umask</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Remote Owner</key>
+<value>
+    <name>Remote Owner</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Remote Group</key>
+<value>
+    <name>Remote Group</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Compression codec</key>
+<value>
+    <name>Compression codec</name>
+</value>
+                            </entry>
+                            <entry>
+<key>Ignore Locality</key>
+<value>
+    <name>Ignore Locality</name>
+</value>
+                            </entry>
+                        </descriptors>
+                        <executionNode>ALL</executionNode>
+                        <lossTolerant>false</lossTolerant>
+                        <maxBackoffPeriod>10 mins</maxBackoffPeriod>
+                        <penaltyDuration>30 sec</penaltyDuration>
+                        <properties>
+                            <entry>
+<key>Hadoop Configuration Resources</key>
+<value>/opt/nifi/hadoop_conf/core-site.xml,/opt/nifi/hadoop_conf/hdfs-site.xml</value>
+                            </entry>
+                            <entry>
+<key>kerberos-credentials-service</key>
+                            </entry>
+                            <entry>
+<key>kerberos-user-service</key>
+                            </entry>
+                            <entry>
+<key>Kerberos Principal</key>
+                            </entry>
+                            <entry>
+<key>Kerberos Keytab</key>
+                            </entry>
+                            <entry>
+<key>Kerberos Password</key>
+                            </entry>
+                            <entry>
+<key>Kerberos Relogin Period</key>
+<value>4 hours</value>
+                            </entry>
+                            <entry>
+<key>Additional Classpath Resources</key>
+                            </entry>
+                            <entry>
+<key>Directory</key>
+<value>/project_data/electricity_maps/${data.zone}/${data.year}</value>
+                            </entry>
+                            <entry>
+<key>Conflict Resolution Strategy</key>
+<value>replace</value>
+                            </entry>
+                            <entry>
+<key>writing-strategy</key>
+<value>writeAndRename</value>
+                            </entry>
+                            <entry>
+<key>Block Size</key>
+                            </entry>
+                            <entry>
+<key>IO Buffer Size</key>
+                            </entry>
+                            <entry>
+<key>Replication</key>
+                            </entry>
+                            <entry>
+<key>Permissions umask</key>
+                            </entry>
+                            <entry>
+<key>Remote Owner</key>
+                            </entry>
+                            <entry>
+<key>Remote Group</key>
+                            </entry>
+                            <entry>
+<key>Compression codec</key>
+<value>NONE</value>
+                            </entry>
+                            <entry>
+<key>Ignore Locality</key>
+<value>false</value>
+                            </entry>
+                        </properties>
+                        <retryCount>10</retryCount>
+                        <runDurationMillis>0</runDurationMillis>
+                        <schedulingPeriod>0 sec</schedulingPeriod>
+                        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                        <yieldDuration>1 sec</yieldDuration>
+                    </config>
+                    <executionNodeRestricted>false</executionNodeRestricted>
+                    <name>Write Parquet to HDFS</name>
+                    <relationships>
+                        <autoTerminate>true</autoTerminate>
+                        <name>failure</name>
+                        <retry>false</retry>
+                    </relationships>
+                    <relationships>
+                        <autoTerminate>true</autoTerminate>
                         <name>success</name>
                         <retry>false</retry>
                     </relationships>
-                    <state>STOPPED</state>
+                    <state>RUNNING</state>
                     <style/>
-                    <type>org.apache.nifi.processors.script.ExecuteScript</type>
+                    <type>org.apache.nifi.processors.hadoop.PutHDFS</type>
                 </processors>
                 <processors>
-                    <id>ac1b9571-7d28-3e2c-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
+                    <id>93277204-189f-3ac0-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
                     <position>
                         <x>-1248.0</x>
                         <y>-24.0</y>
@@ -1015,20 +1171,20 @@ session.remove(flowFile) </value>
                         <name>success</name>
                         <retry>false</retry>
                     </relationships>
-                    <state>STOPPED</state>
+                    <state>RUNNING</state>
                     <style/>
                     <type>org.apache.nifi.processors.standard.GenerateFlowFile</type>
                 </processors>
                 <processors>
-                    <id>b8025f12-60a0-3184-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
+                    <id>ba09de03-255d-3986-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
                     <position>
-                        <x>-592.0</x>
-                        <y>-16.0</y>
+                        <x>96.0</x>
+                        <y>-24.0</y>
                     </position>
-                    <versionedComponentId>2716a0af-6333-3e73-8967-4ca5ba8a8e29</versionedComponentId>
+                    <versionedComponentId>d5dc6c32-224c-321b-94e4-433005edde2a</versionedComponentId>
                     <bundle>
-                        <artifact>nifi-standard-nar</artifact>
+                        <artifact>nifi-update-attribute-nar</artifact>
                         <group>org.apache.nifi</group>
                         <version>1.25.0</version>
                     </bundle>
@@ -1039,47 +1195,33 @@ session.remove(flowFile) </value>
                         <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
                         <descriptors>
                             <entry>
-<key>record-reader</key>
+<key>Delete Attributes Expression</key>
 <value>
-    <identifiesControllerService>org.apache.nifi.serialization.RecordReaderFactory</identifiesControllerService>
-    <name>record-reader</name>
+    <name>Delete Attributes Expression</name>
 </value>
                             </entry>
                             <entry>
-<key>record-writer</key>
+<key>Store State</key>
 <value>
-    <identifiesControllerService>org.apache.nifi.serialization.RecordSetWriterFactory</identifiesControllerService>
-    <name>record-writer</name>
+    <name>Store State</name>
 </value>
                             </entry>
                             <entry>
-<key>include-zero-record-flowfiles</key>
+<key>Stateful Variables Initial Value</key>
 <value>
-    <name>include-zero-record-flowfiles</name>
+    <name>Stateful Variables Initial Value</name>
 </value>
                             </entry>
                             <entry>
-<key>cache-schema</key>
+<key>canonical-value-lookup-cache-size</key>
 <value>
-    <name>cache-schema</name>
+    <name>canonical-value-lookup-cache-size</name>
 </value>
                             </entry>
                             <entry>
-<key>dbf-default-precision</key>
+<key>filename</key>
 <value>
-    <name>dbf-default-precision</name>
-</value>
-                            </entry>
-                            <entry>
-<key>dbf-default-scale</key>
-<value>
-    <name>dbf-default-scale</name>
-</value>
-                            </entry>
-                            <entry>
-<key>selected_columns</key>
-<value>
-    <name>selected_columns</name>
+    <name>filename</name>
 </value>
                             </entry>
                         </descriptors>
@@ -1089,75 +1231,49 @@ session.remove(flowFile) </value>
                         <penaltyDuration>30 sec</penaltyDuration>
                         <properties>
                             <entry>
-<key>record-reader</key>
-<value>a5d3e6d9-4028-3cbe-0000-000000000000</value>
+<key>Delete Attributes Expression</key>
                             </entry>
                             <entry>
-<key>record-writer</key>
-<value>d43bee78-03be-3e35-0000-000000000000</value>
+<key>Store State</key>
+<value>Do not store state</value>
                             </entry>
                             <entry>
-<key>include-zero-record-flowfiles</key>
-<value>true</value>
+<key>Stateful Variables Initial Value</key>
                             </entry>
                             <entry>
-<key>cache-schema</key>
-<value>true</value>
+<key>canonical-value-lookup-cache-size</key>
+<value>100</value>
                             </entry>
                             <entry>
-<key>dbf-default-precision</key>
-<value>10</value>
-                            </entry>
-                            <entry>
-<key>dbf-default-scale</key>
-<value>0</value>
-                            </entry>
-                            <entry>
-<key>selected_columns</key>
-<value>SELECT
-  "Datetime (UTC)",
-  "Country",
-  "Zone name",
-  "Zone id",
-  "Carbon intensity gCO₂eq/kWh (direct)",
-  "Carbon-free energy percentage (CFE%)"
-FROM FLOWFILE</value>
+<key>filename</key>
+<value>${filename:substringBeforeLast('.')}.parquet</value>
                             </entry>
                         </properties>
                         <retryCount>10</retryCount>
-                        <runDurationMillis>0</runDurationMillis>
+                        <runDurationMillis>25</runDurationMillis>
                         <schedulingPeriod>0 sec</schedulingPeriod>
                         <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
                         <yieldDuration>1 sec</yieldDuration>
                     </config>
                     <executionNodeRestricted>false</executionNodeRestricted>
-                    <name>Select Columns &amp; Convert to Parquet</name>
-                    <relationships>
-                        <autoTerminate>true</autoTerminate>
-                        <name>failure</name>
-                        <retry>false</retry>
-                    </relationships>
-                    <relationships>
-                        <autoTerminate>true</autoTerminate>
-                        <name>original</name>
-                        <retry>false</retry>
-                    </relationships>
+                    <name>Set Parquet Filename</name>
                     <relationships>
                         <autoTerminate>false</autoTerminate>
-                        <name>selected_columns</name>
+                        <name>success</name>
                         <retry>false</retry>
                     </relationships>
-                    <state>STOPPED</state>
+                    <state>RUNNING</state>
                     <style/>
-                    <type>org.apache.nifi.processors.standard.QueryRecord</type>
+                    <type>org.apache.nifi.processors.attributes.UpdateAttribute</type>
                 </processors>
                 <processors>
-                    <id>c570d795-04f3-3c7d-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
+                    <id>d8ba5007-5bdc-31bf-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
                     <position>
                         <x>-600.0</x>
                         <y>288.0</y>
                     </position>
+                    <versionedComponentId>d8ba5007-5bdc-31bf-851e-085fae79f965</versionedComponentId>
                     <bundle>
                         <artifact>nifi-standard-nar</artifact>
                         <group>org.apache.nifi</group>
@@ -1643,20 +1759,20 @@ FROM FLOWFILE</value>
                         <name>Retry</name>
                         <retry>false</retry>
                     </relationships>
-                    <state>STOPPED</state>
+                    <state>RUNNING</state>
                     <style/>
                     <type>org.apache.nifi.processors.standard.InvokeHTTP</type>
                 </processors>
                 <processors>
-                    <id>d90b5e46-ca7f-3299-0000-000000000000</id>
-                    <parentGroupId>f7936d6b-3a50-3913-0000-000000000000</parentGroupId>
+                    <id>e67dc5c8-b3f4-3ce8-0000-000000000000</id>
+                    <parentGroupId>59a8c6c5-61e5-3ebb-0000-000000000000</parentGroupId>
                     <position>
-                        <x>104.0</x>
-                        <y>296.0</y>
+                        <x>-1240.0</x>
+                        <y>288.0</y>
                     </position>
-                    <versionedComponentId>52d80f85-84b0-3428-bc14-b57a7dc6128e</versionedComponentId>
+                    <versionedComponentId>7968d6f0-1f10-328b-95cb-c9b1d87d38db</versionedComponentId>
                     <bundle>
-                        <artifact>nifi-hadoop-nar</artifact>
+                        <artifact>nifi-scripting-nar</artifact>
                         <group>org.apache.nifi</group>
                         <version>1.25.0</version>
                     </bundle>
@@ -1667,131 +1783,27 @@ FROM FLOWFILE</value>
                         <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
                         <descriptors>
                             <entry>
-<key>Hadoop Configuration Resources</key>
+<key>Script Engine</key>
 <value>
-    <name>Hadoop Configuration Resources</name>
+    <name>Script Engine</name>
 </value>
                             </entry>
                             <entry>
-<key>kerberos-credentials-service</key>
+<key>Script File</key>
 <value>
-    <identifiesControllerService>org.apache.nifi.kerberos.KerberosCredentialsService</identifiesControllerService>
-    <name>kerberos-credentials-service</name>
+    <name>Script File</name>
 </value>
                             </entry>
                             <entry>
-<key>kerberos-user-service</key>
+<key>Script Body</key>
 <value>
-    <identifiesControllerService>org.apache.nifi.kerberos.KerberosUserService</identifiesControllerService>
-    <name>kerberos-user-service</name>
+    <name>Script Body</name>
 </value>
                             </entry>
                             <entry>
-<key>Kerberos Principal</key>
+<key>Module Directory</key>
 <value>
-    <name>Kerberos Principal</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Kerberos Keytab</key>
-<value>
-    <name>Kerberos Keytab</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Kerberos Password</key>
-<value>
-    <name>Kerberos Password</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Kerberos Relogin Period</key>
-<value>
-    <name>Kerberos Relogin Period</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Additional Classpath Resources</key>
-<value>
-    <name>Additional Classpath Resources</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Directory</key>
-<value>
-    <name>Directory</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Conflict Resolution Strategy</key>
-<value>
-    <name>Conflict Resolution Strategy</name>
-</value>
-                            </entry>
-                            <entry>
-<key>writing-strategy</key>
-<value>
-    <name>writing-strategy</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Block Size</key>
-<value>
-    <name>Block Size</name>
-</value>
-                            </entry>
-                            <entry>
-<key>IO Buffer Size</key>
-<value>
-    <name>IO Buffer Size</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Replication</key>
-<value>
-    <name>Replication</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Permissions umask</key>
-<value>
-    <name>Permissions umask</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Remote Owner</key>
-<value>
-    <name>Remote Owner</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Remote Group</key>
-<value>
-    <name>Remote Group</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Compression codec</key>
-<value>
-    <name>Compression codec</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Ignore Locality</key>
-<value>
-    <name>Ignore Locality</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Append Mode</key>
-<value>
-    <name>Append Mode</name>
-</value>
-                            </entry>
-                            <entry>
-<key>Resource Transfer Source</key>
-<value>
-    <name>Resource Transfer Source</name>
+    <name>Module Directory</name>
 </value>
                             </entry>
                         </descriptors>
@@ -1801,76 +1813,50 @@ FROM FLOWFILE</value>
                         <penaltyDuration>30 sec</penaltyDuration>
                         <properties>
                             <entry>
-<key>Hadoop Configuration Resources</key>
-<value>/opt/nifi/hadoop_conf/core-site.xml,/opt/nifi/hadoop_conf/hdfs-site.xml</value>
+<key>Script Engine</key>
+<value>Groovy</value>
                             </entry>
                             <entry>
-<key>kerberos-credentials-service</key>
+<key>Script File</key>
                             </entry>
                             <entry>
-<key>kerberos-user-service</key>
+<key>Script Body</key>
+<value>import org.apache.nifi.processor.io.OutputStreamCallback
+import java.nio.charset.StandardCharsets
+
+def flowFile = session.get()
+if(!flowFile) return
+
+def baseUrlDatePart = "https://data.electricitymaps.com/2025-04-03" 
+def suffix = "_hourly.csv"
+def zones = [
+    "IT-CNO", "IT-CSO", "IT-NO", "IT-SAR", "IT-SIC", "IT-SO",
+    "SE-SE1", "SE-SE2", "SE-SE3", "SE-SE4"
+]
+def years = ["2024", "2023", "2022", "2021"]
+
+zones.each { zone -&gt;
+    years.each { year -&gt;
+        def filenamePart = "${zone}_${year}${suffix}"
+        def downloadUrl = "${baseUrlDatePart}/${filenamePart}"
+
+        def newFlowFile = session.create(flowFile) 
+        newFlowFile = session.putAttribute(newFlowFile, "download.url", downloadUrl)
+        newFlowFile = session.putAttribute(newFlowFile, "data.zone", zone)
+        newFlowFile = session.putAttribute(newFlowFile, "data.year", year)
+        newFlowFile = session.putAttribute(newFlowFile, "filename", filenamePart) 
+
+        newFlowFile = session.write(newFlowFile, { outputStream -&gt;
+            outputStream.write(downloadUrl.getBytes(StandardCharsets.UTF_8))
+        } as OutputStreamCallback)
+        
+        session.transfer(newFlowFile, ScriptingComponentUtils.REL_SUCCESS)
+    }
+}
+session.remove(flowFile) </value>
                             </entry>
                             <entry>
-<key>Kerberos Principal</key>
-                            </entry>
-                            <entry>
-<key>Kerberos Keytab</key>
-                            </entry>
-                            <entry>
-<key>Kerberos Password</key>
-                            </entry>
-                            <entry>
-<key>Kerberos Relogin Period</key>
-<value>4 hours</value>
-                            </entry>
-                            <entry>
-<key>Additional Classpath Resources</key>
-                            </entry>
-                            <entry>
-<key>Directory</key>
-<value>/project_data/electricity_maps/${data.zone}/${data.year}</value>
-                            </entry>
-                            <entry>
-<key>Conflict Resolution Strategy</key>
-<value>replace</value>
-                            </entry>
-                            <entry>
-<key>writing-strategy</key>
-<value>writeAndRename</value>
-                            </entry>
-                            <entry>
-<key>Block Size</key>
-                            </entry>
-                            <entry>
-<key>IO Buffer Size</key>
-                            </entry>
-                            <entry>
-<key>Replication</key>
-                            </entry>
-                            <entry>
-<key>Permissions umask</key>
-                            </entry>
-                            <entry>
-<key>Remote Owner</key>
-                            </entry>
-                            <entry>
-<key>Remote Group</key>
-                            </entry>
-                            <entry>
-<key>Compression codec</key>
-<value>NONE</value>
-                            </entry>
-                            <entry>
-<key>Ignore Locality</key>
-<value>false</value>
-                            </entry>
-                            <entry>
-<key>Append Mode</key>
-<value>DEFAULT</value>
-                            </entry>
-                            <entry>
-<key>Resource Transfer Source</key>
-<value>FLOWFILE_CONTENT</value>
+<key>Module Directory</key>
                             </entry>
                         </properties>
                         <retryCount>10</retryCount>
@@ -1880,20 +1866,20 @@ FROM FLOWFILE</value>
                         <yieldDuration>1 sec</yieldDuration>
                     </config>
                     <executionNodeRestricted>false</executionNodeRestricted>
-                    <name>Write Parquet to HDFS</name>
+                    <name>ExecuteScript</name>
                     <relationships>
                         <autoTerminate>true</autoTerminate>
                         <name>failure</name>
                         <retry>false</retry>
                     </relationships>
                     <relationships>
-                        <autoTerminate>true</autoTerminate>
+                        <autoTerminate>false</autoTerminate>
                         <name>success</name>
                         <retry>false</retry>
                     </relationships>
-                    <state>STOPPED</state>
+                    <state>RUNNING</state>
                     <style/>
-                    <type>org.apache.nifi.processors.hadoop.PutHDFS</type>
+                    <type>org.apache.nifi.processors.script.ExecuteScript</type>
                 </processors>
             </contents>
             <defaultBackPressureDataSizeThreshold>1 GB</defaultBackPressureDataSizeThreshold>
@@ -1905,5 +1891,5 @@ FROM FLOWFILE</value>
             <variables/>
         </processGroups>
     </snippet>
-    <timestamp>05/17/2025 17:32:13 UTC</timestamp>
+    <timestamp>05/18/2025 10:36:28 UTC</timestamp>
 </template>
