@@ -65,100 +65,65 @@ services:
       retries: 5
 
   spark-master:
-      image: bitnami/spark:3.5
-      container_name: spark-master
-      hostname: spark-master
-      ports:
-        - "8080:8080" # Spark Master Web UI
-        - "7077:7077" # Spark Master RPC
-      volumes:
-        - ./spark_apps:/opt/bitnami/spark/apps
-        - ./spark_data:/opt/bitnami/spark/data
-        - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop_conf
-      environment:
-        - SPARK_MODE=master
-        - SPARK_RPC_AUTHENTICATION_ENABLED=no
-        - SPARK_RPC_ENCRYPTION_ENABLED=no
-        - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-        - SPARK_SSL_ENABLED=no
-        - SPARK_USER=root # Per permessi di scrittura in HDFS
-        - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop_conf
-      networks:
-        - sabd_net
-      depends_on:
-        - namenode
+    image: bitnami/spark:3.5 # Spark 3.5 è compatibile con Hadoop 3.2.1
+    container_name: spark-master
+    hostname: spark-master
+    ports:
+      - "8081:8080"  # Spark Master Web UI (8081 host per evitare conflitti)
+      - "7077:7077"  # Spark Master RPC
+    volumes:
+      - ./spark_apps:/opt/spark_apps # Monta i tuoi script PySpark qui
+      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro # Monta la config di Hadoop (sola lettura)
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop
+      - LD_PRELOAD=/opt/bitnami/common/lib/libnss_wrapper.so # <--- AGGIUNGI QUI
+      - HADOOP_USER_NAME=spark
+      - USER=spark
+      - LOGNAME=spark
+      - HOME=/opt/bitnami/spark
+    networks:
+      - sabd_net
+    depends_on:
+      namenode:
+        condition: service_healthy # Spark ha bisogno che HDFS Namenode sia pronto
+      datanode: # I worker e il driver Spark avranno bisogno dei datanode
+        condition: service_started # Datanode non ha un healthcheck di default
+    healthcheck: # Healthcheck per il master Spark
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/applications"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
-  spark-worker-1: # Worker 1
-      image: bitnami/spark:3.5
-      container_name: spark-worker-1
-      hostname: spark-worker-1
-      volumes:
-        - ./spark_apps:/opt/bitnami/spark/apps
-        - ./spark_data:/opt/bitnami/spark/data
-        - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop_conf
-      environment:
-        - SPARK_MODE=worker
-        - SPARK_MASTER_URL=spark://spark-master:7077
-        - SPARK_WORKER_MEMORY=1G
-        - SPARK_WORKER_CORES=1
-        - SPARK_RPC_AUTHENTICATION_ENABLED=no
-        - SPARK_RPC_ENCRYPTION_ENABLED=no
-        - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-        - SPARK_SSL_ENABLED=no
-        - SPARK_USER=root
-        - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop_conf
-      networks:
-        - sabd_net
-      depends_on:
-        - spark-master
-
-  spark-worker-2: # Worker 2
-      image: bitnami/spark:3.5
-      container_name: spark-worker-2
-      hostname: spark-worker-2
-      volumes:
-        - ./spark_apps:/opt/bitnami/spark/apps
-        - ./spark_data:/opt/bitnami/spark/data
-        - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop_conf
-      environment:
-        - SPARK_MODE=worker
-        - SPARK_MASTER_URL=spark://spark-master:7077
-        - SPARK_WORKER_MEMORY=1G
-        - SPARK_WORKER_CORES=1
-        - SPARK_RPC_AUTHENTICATION_ENABLED=no
-        - SPARK_RPC_ENCRYPTION_ENABLED=no
-        - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-        - SPARK_SSL_ENABLED=no
-        - SPARK_USER=root
-        - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop_conf
-      networks:
-        - sabd_net
-      depends_on:
-        - spark-master
-
-  spark-worker-3: # Worker 3
-      image: bitnami/spark:3.5
-      container_name: spark-worker-3
-      hostname: spark-worker-3
-      volumes:
-        - ./spark_apps:/opt/bitnami/spark/apps
-        - ./spark_data:/opt/bitnami/spark/data
-        - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop_conf
-      environment:
-        - SPARK_MODE=worker
-        - SPARK_MASTER_URL=spark://spark-master:7077
-        - SPARK_WORKER_MEMORY=1G
-        - SPARK_WORKER_CORES=1
-        - SPARK_RPC_AUTHENTICATION_ENABLED=no
-        - SPARK_RPC_ENCRYPTION_ENABLED=no
-        - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-        - SPARK_SSL_ENABLED=no
-        - SPARK_USER=root
-        - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop_conf
-      networks:
-        - sabd_net
-      depends_on:
-        - spark-master
+  spark-worker:
+    image: bitnami/spark:3.5
+    container_name: spark-worker-1 # Puoi scalare aggiungendo spark-worker-2, ecc.
+    hostname: spark-worker-1
+    volumes:
+      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro # Anche i worker necessitano della config HDFS
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_CORES=1 # Configura le risorse a seconda della tua macchina
+      - SPARK_WORKER_MEMORY=1G # Configura le risorse
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop
+      - SPARK_WORKER_WEBUI_PORT=8082 # Porta UI per questo worker specifico (opzionale, per debug)
+    depends_on:
+      spark-master:
+        condition: service_healthy
+      namenode: # I worker potrebbero aver bisogno di accedere a HDFS per log o altro
+        condition: service_healthy
+    networks:
+      - sabd_net
 
 volumes:
   namenode_data:

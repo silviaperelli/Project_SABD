@@ -77,7 +77,7 @@ if __name__ == "__main__":
     print("Conteggio per country_code:")
     df_transformed.groupBy("country_code").count().orderBy("country_code").show(50)
 
-    output_path_processed = "hdfs://namenode:8020/processed_data/"
+    output_path_processed = "hdfs://namenode:8020/user/spark/processed_data/"
     try:
         df_transformed.write \
             .partitionBy("country_code") \
