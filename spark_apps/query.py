@@ -6,7 +6,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # 2. Leggi il file Parquet da HDFS (modifica il path se necessario)
-df = spark.read.parquet("hdfs://namenode:8020/user/spark/processed_data/country_code=IT/part-00001-0a2d1db6-985d-4d7f-8912-fe64028ced3f.c000.snappy.parquet")
+df = spark.read.parquet("hdfs://namenode:8020/spark_data/spark/country_code=IT/part-00000-ac6114c5-28e9-4c19-b961-1517331bc3cc.c000.snappy.parquet")
 
 # 3. Registra il DataFrame come vista temporanea SQL
 df.createOrReplaceTempView("dati")
