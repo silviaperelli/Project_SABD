@@ -5,8 +5,8 @@ services:
     restart: always
     hostname: namenode
     ports:
-      - "9870:9870" # Namenode Web UI
-      - "8020:8020" # Namenode RPC
+      - "9870:9870"
+      - "8020:8020"
     volumes:
       - namenode_data:/hadoop/dfs/name
       - ./hadoop_init_scripts:/opt/hadoop_init_scripts
@@ -27,7 +27,7 @@ services:
       - datanode_data:/hadoop/dfs/data
       - ./hadoop_conf:/opt/hadoop/etc/hadoop
     environment:
-      - SERVICE_PRECONDITION=namenode:9870 # Wait for namenode to be up
+      - SERVICE_PRECONDITION=namenode:9870
       - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
     depends_on:
       - namenode
@@ -35,14 +35,14 @@ services:
       - sabd_net
 
   nifi:
-    image: apache/nifi:1.25.0 # Or latest, but pinning version is good practice
+    image: apache/nifi:1.25.0
     container_name: nifi
     restart: always
     ports:
-      - "8443:8443" # NiFi Web UI (HTTPS by default in recent versions)
+      - "8443:8443"
     volumes:
       - ./nifi_conf/templates:/opt/nifi/nifi-current/conf/templates
-      - ./hadoop_conf:/opt/nifi/hadoop_conf # Mount HDFS configs
+      - ./hadoop_conf:/opt/nifi/hadoop_conf
       - nifi_data_conf:/opt/nifi/nifi-current/conf
       - nifi_data_database:/opt/nifi/nifi-current/database_repository
       - nifi_data_flowfile:/opt/nifi/nifi-current/flowfile_repository
@@ -59,21 +59,21 @@ services:
     networks:
       - sabd_net
     healthcheck:
-      test: ["CMD", "curl", "-f", "-k", "https://localhost:8443/nifi-api/system-diagnostics"] # -k per insecure HTTPS
+      test: ["CMD", "curl", "-f", "-k", "https://localhost:8443/nifi-api/system-diagnostics"]
       interval: 30s
       timeout: 10s
       retries: 5
 
   spark-master:
-    image: bitnami/spark:3.5 # Spark 3.5 è compatibile con Hadoop 3.2.1
+    image: bitnami/spark:3.5
     container_name: spark-master
     hostname: spark-master
     ports:
-      - "8081:8080"  # Spark Master Web UI (8081 host per evitare conflitti)
-      - "7077:7077"  # Spark Master RPC
+      - "8081:8080"
+      - "7077:7077"
     volumes:
-      - ./spark_apps:/opt/spark_apps # Monta i tuoi script PySpark qui
-      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro # Monta la config di Hadoop (sola lettura)
+      - ./spark_apps:/opt/spark_apps
+      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -81,7 +81,7 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
       - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop
-      - LD_PRELOAD=/opt/bitnami/common/lib/libnss_wrapper.so # <--- AGGIUNGI QUI
+      - LD_PRELOAD=/opt/bitnami/common/lib/libnss_wrapper.so
       - HADOOP_USER_NAME=spark
       - USER=spark
       - LOGNAME=spark
@@ -90,37 +90,87 @@ services:
       - sabd_net
     depends_on:
       namenode:
-        condition: service_healthy # Spark ha bisogno che HDFS Namenode sia pronto
-      datanode: # I worker e il driver Spark avranno bisogno dei datanode
-        condition: service_started # Datanode non ha un healthcheck di default
-    healthcheck: # Healthcheck per il master Spark
+        condition: service_healthy
+      datanode:
+        condition: service_started
+    healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/applications"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
 
-  spark-worker:
+  spark-worker-1:
     image: bitnami/spark:3.5
-    container_name: spark-worker-1 # Puoi scalare aggiungendo spark-worker-2, ecc.
+    container_name: spark-worker-1
     hostname: spark-worker-1
     volumes:
-      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro # Anche i worker necessitano della config HDFS
+      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_CORES=1 # Configura le risorse a seconda della tua macchina
-      - SPARK_WORKER_MEMORY=1G # Configura le risorse
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=1G
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
       - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop
-      - SPARK_WORKER_WEBUI_PORT=8082 # Porta UI per questo worker specifico (opzionale, per debug)
+      - SPARK_WORKER_WEBUI_PORT=8082
     depends_on:
       spark-master:
         condition: service_healthy
-      namenode: # I worker potrebbero aver bisogno di accedere a HDFS per log o altro
+      namenode:
+        condition: service_healthy
+    networks:
+      - sabd_net
+
+  spark-worker-2:
+    image: bitnami/spark:3.5
+    container_name: spark-worker-2
+    hostname: spark-worker-2
+    volumes:
+      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop
+      - SPARK_WORKER_WEBUI_PORT=8083
+    depends_on:
+      spark-master:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
+    networks:
+      - sabd_net
+
+  spark-worker-3:
+    image: bitnami/spark:3.5
+    container_name: spark-worker-3
+    hostname: spark-worker-3
+    volumes:
+      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop
+      - SPARK_WORKER_WEBUI_PORT=8084
+    depends_on:
+      spark-master:
+        condition: service_healthy
+      namenode:
         condition: service_healthy
     networks:
       - sabd_net

@@ -65,15 +65,13 @@ if __name__ == "__main__":
 
         print("Schema dati grezzi (dopo la rimozione colonne):")
         df_raw.printSchema()
-        df_raw.show(5, truncate=False)  # Mostra i dati dopo la rimozione per verifica
-        # --- FINE MODIFICA ---
+        df_raw.show(5, truncate=False)
 
     except Exception as e:
         print(f"Errore durante la lettura dei dati grezzi o la rimozione delle colonne: {e}")
         spark.stop()
         exit()
 
-    # Le trasformazioni successive operano su df_raw che ora non ha più le colonne eliminate
     df_transformed = df_raw \
         .withColumn("datetime", to_timestamp(col("Datetime__UTC_"))) \
         .withColumn("carbon_intensity", col("Carbon_intensity_gCO_eq_kWh__direct_").cast("double")) \
