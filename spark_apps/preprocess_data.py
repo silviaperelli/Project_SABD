@@ -40,6 +40,8 @@ if __name__ == "__main__":
         .appName("DataPreprocessing") \
         .getOrCreate()
 
+    spark.sparkContext.setLogLevel("WARN")
+
     base_input_path_hdfs = "hdfs://namenode:8020/nifi_data/electricity_maps/"
     print(f"Lettura dati da HDFS: {base_input_path_hdfs}*/*/*.parquet")
 
@@ -79,13 +81,15 @@ if __name__ == "__main__":
         .withColumn("year", year(col("datetime"))) \
         .withColumn("month", month(col("datetime"))) \
         .withColumn("hour", hour(col("datetime"))) \
-        .withColumn("country_code", normalize_country_code(col("Country"), col("Zone_id"))) \
+        .withColumn("country", normalize_country_code(col("Country"), col("Zone_id"))) \
         .withColumnRenamed("Zone_id", "zone_id") \
         .select(
         "datetime", "zone_id", "carbon_intensity", "carbon_free_percentage",
-        "country_code", "year", "month", "hour"
+        col("country").alias("country_code"),
+        "year", "month", "hour",
+        "country"
     ) \
-        .filter(col("country_code") != "UNKNOWN")
+        .filter(col("country") != "UNKNOWN")
 
     print("Schema dati trasformati:")
     df_transformed.printSchema()
@@ -97,7 +101,7 @@ if __name__ == "__main__":
     output_path_processed = "hdfs://namenode:8020/spark_data/spark"
     try:
         df_transformed.write \
-            .partitionBy("country_code") \
+            .partitionBy("country") \
             .mode("overwrite") \
             .parquet(output_path_processed)
         print(f"Dati processati e partizionati salvati in {output_path_processed}")

@@ -18,6 +18,9 @@ echo "Creazione directory per Spark: /spark_data"
 hdfs dfs -mkdir -p /spark_data
 hdfs dfs -chown spark:supergroup /spark_data
 
+hdfs dfs -mkdir -p /spark_data
+hdfs dfs -chown spark:supergroup /spark_data
+
 echo "Inizializzazione HDFS completata."
 exit 0
 
