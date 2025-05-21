@@ -101,17 +101,11 @@ if __name__ == "__main__":
     # Creazione DataFrame separatore con spazi vuoti
     output_schema = ci_desc_output.schema
 
-    # Riempiamo i campi del CSV con stringa vuota e None per le colonne numeriche
-    separator_data = [("", None, None)]  # (date, carbon_intensity, cfe)
-    separator_df = spark.createDataFrame(separator_data, schema=output_schema)
 
     # Unione di tutti i DataFrame per l'output unico
     final_df_q2 = ci_desc_output \
-        .unionAll(separator_df) \
         .unionAll(ci_asc_output) \
-        .unionAll(separator_df) \
         .unionAll(cfe_desc_output) \
-        .unionAll(separator_df) \
         .unionAll(cfe_asc_output)
 
     print("\nSchema del DataFrame finale combinato per Q2:")
