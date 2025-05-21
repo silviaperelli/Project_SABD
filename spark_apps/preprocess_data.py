@@ -1,8 +1,7 @@
 # ./spark_apps/preprocess_data.py
 import time
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, year, month, hour, to_timestamp, lit, when, upper
-
+from pyspark.sql.functions import col, year, month, dayofmonth, hour, to_timestamp, lit, when, upper, avg
 
 def normalize_country_code(country_col_original, zone_id_col):
     """
@@ -28,7 +27,7 @@ def normalize_country_code(country_col_original, zone_id_col):
         .when(upper(country_col_original) == "CHINA", lit("CN")) \
         .when(upper(country_col_original) == "INDIA", lit("IN")) \
         .otherwise(
-        when(zone_id_col.rlike("^[A-Z]{2}-"), upper(zone_id_col.substr(1, 2)))
+        when(zone_id_col.isNotNull() & zone_id_col.rlike("^[A-Z]{2}"), upper(zone_id_col.substr(1, 2))) # Gestione più robusta per zone_id
         .otherwise(lit("UNKNOWN"))
     )
     return country_code
@@ -63,7 +62,14 @@ if __name__ == "__main__":
             "Data_estimation_method"
         ]
 
-        df_raw = df_raw.drop(*columns_to_drop)
+        existing_columns = df_raw.columns
+        columns_to_drop_actual = [c for c in columns_to_drop if c in existing_columns]
+        if len(columns_to_drop_actual) > 0:
+            df_raw = df_raw.drop(*columns_to_drop_actual)
+            print(f"Colonne rimosse: {columns_to_drop_actual}")
+        else:
+            print("Nessuna delle colonne specificate per la rimozione è presente nel DataFrame.")
+
 
         print("Schema dati grezzi (dopo la rimozione colonne):")
         df_raw.printSchema()
@@ -74,40 +80,69 @@ if __name__ == "__main__":
         spark.stop()
         exit()
 
-    df_transformed = df_raw \
+    df_intermediate = df_raw \
         .withColumn("datetime", to_timestamp(col("Datetime__UTC_"))) \
-        .withColumn("carbon_intensity", col("Carbon_intensity_gCO_eq_kWh__direct_").cast("double")) \
-        .withColumn("carbon_free_percentage", col("Carbon_free_energy_percentage__CFE__").cast("double")) \
+        .withColumn("carbon_intensity_val", col("Carbon_intensity_gCO_eq_kWh__direct_").cast("double")) \
+        .withColumn("carbon_free_percentage_val", col("Carbon_free_energy_percentage__CFE__").cast("double")) \
+        .withColumn("country_code", normalize_country_code(col("Country"), col("Zone_id"))) \
+        .filter(col("country_code") != "UNKNOWN") \
+        .select(
+            "datetime",
+            "country_code",
+            "carbon_intensity_val",
+            "carbon_free_percentage_val"
+        )
+
+    print("Schema dati dopo trasformazioni iniziali e filtro (pronto per l'aggregazione per timestamp):")
+    df_intermediate.printSchema()
+    df_intermediate.show(5, truncate=False)
+
+    df_aggregated_by_timestamp = df_intermediate \
+        .groupBy("datetime", "country_code") \
+        .agg(
+            avg("carbon_intensity_val").alias("carbon_intensity"),
+            avg("carbon_free_percentage_val").alias("carbon_free_percentage")
+        )
+
+    print("Schema dati dopo l'aggregazione per paese e timestamp:")
+    df_aggregated_by_timestamp.printSchema()
+    df_aggregated_by_timestamp.show(5, truncate=False)
+
+    df_final = df_aggregated_by_timestamp \
         .withColumn("year", year(col("datetime"))) \
         .withColumn("month", month(col("datetime"))) \
+        .withColumn("day", dayofmonth(col("datetime"))) \
         .withColumn("hour", hour(col("datetime"))) \
-        .withColumn("country", normalize_country_code(col("Country"), col("Zone_id"))) \
-        .withColumnRenamed("Zone_id", "zone_id") \
         .select(
-        "datetime", "zone_id", "carbon_intensity", "carbon_free_percentage",
-        col("country").alias("country_code"),
-        "year", "month", "hour",
-        "country"
-    ) \
-        .filter(col("country") != "UNKNOWN")
+            "datetime",
+            "country_code",
+            col("country_code").alias("country"),
+            "carbon_intensity",
+            "carbon_free_percentage",
+            "year",
+            "month",
+            "day",
+            "hour"
+        ).orderBy("country", "datetime") # Ordinamento per una migliore leggibilità dell'output
 
-    print("Schema dati trasformati:")
-    df_transformed.printSchema()
-    df_transformed.show(5, truncate=False)
-    print(f"Numero totale di righe trasformate: {df_transformed.count()}")
-    print("Conteggio per country_code:")
-    df_transformed.groupBy("country_code").count().orderBy("country_code").show(50)
+
+    print("Schema dati finali (aggregati per paese e timestamp):")
+    df_final.printSchema()
+    df_final.show(10, truncate=False)
+    print(f"Numero totale di righe dopo aggregazione per paese e timestamp: {df_final.count()}")
+    print("Conteggio per country (dopo aggregazione per timestamp):")
+    df_final.groupBy("country").count().orderBy("country").show(50)
 
     output_path_processed = "hdfs://namenode:8020/spark_data/spark"
     try:
-        df_transformed.write \
+        df_final.write \
             .partitionBy("country") \
             .mode("overwrite") \
             .parquet(output_path_processed)
-        print(f"Dati processati e partizionati salvati in {output_path_processed}")
+        print(f"Dati aggregati per paese e timestamp, partizionati per paese, salvati in {output_path_processed}")
     except Exception as e:
         print(f"Errore salvataggio dati processati: {e}")
 
     end_time = time.time()
-    print(f"Tempo di esecuzione pre-processing: {end_time - start_time:.2f} secondi")
+    print(f"Tempo di esecuzione pre-processing e aggregazione per timestamp: {end_time - start_time:.2f} secondi")
     spark.stop()
