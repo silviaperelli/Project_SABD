@@ -85,7 +85,7 @@ if __name__ == "__main__":
     output_path_processed = "hdfs://namenode:8020/spark_data/spark"
     try:
         df_final.write \
-            .partitionBy("country_code") \
+            .partitionBy("country") \
             .mode("overwrite") \
             .parquet(output_path_processed)
         print(f"Dati aggregati per paese e timestamp, partizionati per paese, salvati in {output_path_processed}")
