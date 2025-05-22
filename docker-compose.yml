@@ -110,7 +110,7 @@ services:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
       - SPARK_WORKER_CORES=1
-      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_MEMORY=2G
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
@@ -124,57 +124,6 @@ services:
         condition: service_healthy
     networks:
       - sabd_net
-
-  spark-worker-2:
-    image: bitnami/spark:3.5
-    container_name: spark-worker-2
-    hostname: spark-worker-2
-    volumes:
-      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro
-    environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_CORES=1
-      - SPARK_WORKER_MEMORY=1G
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop
-      - SPARK_WORKER_WEBUI_PORT=8083
-    depends_on:
-      spark-master:
-        condition: service_healthy
-      namenode:
-        condition: service_healthy
-    networks:
-      - sabd_net
-
-  spark-worker-3:
-    image: bitnami/spark:3.5
-    container_name: spark-worker-3
-    hostname: spark-worker-3
-    volumes:
-      - ./hadoop_conf:/opt/bitnami/spark/conf/hadoop:ro
-    environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_CORES=1
-      - SPARK_WORKER_MEMORY=1G
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - HADOOP_CONF_DIR=/opt/bitnami/spark/conf/hadoop
-      - SPARK_WORKER_WEBUI_PORT=8084
-    depends_on:
-      spark-master:
-        condition: service_healthy
-      namenode:
-        condition: service_healthy
-    networks:
-      - sabd_net
-
 volumes:
   namenode_data:
   datanode_data:
