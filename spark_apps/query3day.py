@@ -4,7 +4,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 import os
 
-N_RUN = 1
+N_RUN = 10
 
 # Query Q3: Aggregare i dati sulle 24 ore
 # Aggregare i dati di ciascun paese sulle 24 ore della giornata, calcolando il valor medio di “Carbon intensity gCO2eq/kWh (direct)”

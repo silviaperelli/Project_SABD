@@ -80,7 +80,7 @@ def run_query2(spark_session, path_to_read):
 
     end_time = time.time()
 
-    return final_df_q2, end_time - start_time
+    return final_df_q2, monthly_aggregated_it_df, end_time - start_time
 
 
 if __name__ == "__main__":
@@ -100,16 +100,19 @@ if __name__ == "__main__":
 
     execution_times = []  # Lista per memorizzare i tempi di ogni esecuzione della query
     final_output_df_q2 = None  # Per salvare il risultato dell'ultima esecuzione
+    final_monthly_df = None # Per salvare il dataframe aggregato su coppia (anno, mese)
 
     print(f"\nEsecuzione della Query Q2 per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"Esecuzione Q2 - Run {i + 1}/{N_RUN}")
 
-        result_df, exec_time = run_query2(spark, path_to_read)
+        result_df, monthly_df, exec_time = run_query2(spark, path_to_read)
         execution_times.append(exec_time)  # Aggiunge il tempo di esecuzione alla lista
         print(f"Run {i + 1} completato in {exec_time:.4f} secondi.")
         if i == N_RUN - 1:  # Se è l'ultima esecuzione, salva il DataFrame risultato
             final_output_df_q2 = result_df
+            final_monthly_df = monthly_df
+
 
     # Calcola e stampa le statistiche dei tempi di esecuzione
     if execution_times:
@@ -122,15 +125,17 @@ if __name__ == "__main__":
             print(f"Deviazione standard dei tempi: {std_dev_time:.4f} secondi")
         print("----------------------------------------------------")
 
-    if final_output_df_q2:
+    if final_output_df_q2 and final_monthly_df:
         print("\nRisultati aggregati finali per Q2:")
 
         final_output_df_q2.show(n=final_output_df_q2.count(), truncate=False)
 
         csv_output_path = os.path.join(base_data_path, "Q2_results")  # Path per il CSV
+        csv_graphs_path = os.path.join(base_data_path, "Q2_graphs") # Path per il CSV per i grafici
         # .coalesce(1) riduce il numero di partizioni a 1 per scrivere un singolo file CSV
         final_output_df_q2.coalesce(1).write.csv(csv_output_path, header=True, mode="overwrite")
-        print(f"Risultati Q2 salvati in CSV: {csv_output_path}")
+        final_monthly_df.coalesce(1).write.csv(csv_graphs_path, header=True, mode="overwrite")
+        print(f"Risultati Q2 salvati in CSV: {csv_output_path} e in {csv_graphs_path}")
 
     end_time_script = time.time()
     print(f"\nTempo di esecuzione totale dello script: {end_time_script - start_time_script:.2f} secondi")

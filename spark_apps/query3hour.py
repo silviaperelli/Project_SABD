@@ -17,9 +17,9 @@ def calculate_percentiles_and_stats(df_input, value_col_name, metric_name_output
         .agg(
             F.lit(metric_name_output).alias("data"),
             F.min(F.col(value_col_name)).alias("min_val"),
-            F.expr(f"percentile_approx({value_col_name}, 0.25)").alias("p25_val"),
-            F.expr(f"percentile_approx({value_col_name}, 0.50)").alias("p50_val"),
-            F.expr(f"percentile_approx({value_col_name}, 0.75)").alias("p75_val"),
+            F.expr(f"percentile({value_col_name}, 0.25)").alias("p25_val"),
+            F.expr(f"percentile({value_col_name}, 0.50)").alias("p50_val"),
+            F.expr(f"percentile({value_col_name}, 0.75)").alias("p75_val"),
             F.max(F.col(value_col_name)).alias("max_val")
         ).select(
             "country_code",
@@ -79,7 +79,7 @@ def run_query3(spark_session, paths_to_read):
 
     end_time = time.time()
 
-    return final_stats_df_q3, end_time - start_time
+    return final_stats_df_q3, hourly_avg_df, end_time - start_time
 
 
 if __name__ == "__main__":
@@ -100,16 +100,18 @@ if __name__ == "__main__":
 
     execution_times = []  # Lista per memorizzare i tempi di ogni esecuzione della query
     final_output_df_q3 = None  # Per salvare il risultato dell'ultima esecuzione
+    final_hourly_df = None # Per salvare il dataframe aggregato sulle 24 ore
 
     print(f"\nEsecuzione della Query Q3 per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"Esecuzione Q3 - Run {i + 1}/{N_RUN}")
 
-        result_df, exec_time = run_query3(spark, paths_to_read)
+        result_df, hourly_df, exec_time = run_query3(spark, paths_to_read)
         execution_times.append(exec_time)  # Aggiunge il tempo di esecuzione alla lista
         print(f"Run {i + 1} completato in {exec_time:.4f} secondi.")
         if i == N_RUN - 1:  # Se è l'ultima esecuzione, salva il DataFrame risultato
             final_output_df_q3 = result_df
+            final_hourly_df = hourly_df
 
     # Calcola e stampa le statistiche dei tempi di esecuzione
     if execution_times:
@@ -122,15 +124,17 @@ if __name__ == "__main__":
             print(f"Deviazione standard dei tempi: {std_dev_time:.4f} secondi")
         print("----------------------------------------------------")
 
-    if final_output_df_q3:
+    if final_output_df_q3 and final_hourly_df:
         print("\nRisultati aggregati finali per Q3:")
 
         final_output_df_q3.orderBy("country_code").show(n=final_output_df_q3.count(), truncate=False)
 
         csv_output_path = os.path.join(base_data_path, "Q3_results")  # Path per il CSV
+        csv_graphs_path = os.path.join(base_data_path, "Q3_graphs") # Path per il CSV per i grafici
         # .coalesce(1) riduce il numero di partizioni a 1 per scrivere un singolo file CSV
         final_output_df_q3.coalesce(1).write.csv(csv_output_path, header=True, mode="overwrite")
-        print(f"Risultati Q3 salvati in CSV: {csv_output_path}")
+        final_hourly_df.coalesce(1).write.csv(csv_graphs_path, header=True, mode="overwrite")
+        print(f"Risultati Q3 salvati in CSV: {csv_output_path} e {csv_graphs_path}")
 
     end_time_script = time.time()
     print(f"\nTempo di esecuzione totale dello script: {end_time_script - start_time_script:.2f} secondi")

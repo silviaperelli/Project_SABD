@@ -87,7 +87,6 @@ def tuning_k(spark_session, paths_to_read):
                 "features").setMetricName("silhouette").setDistanceMeasure("squaredEuclidean")
             silhouette = evaluator.evaluate(predictions_test)
             silhouette_scores.append({"k": k_test, "silhouette_score": silhouette})
-            print(f"K={k_test}")
         except Exception as e_k:
             print(f"  Errore durante il test per K={k_test}: {e_k}")
             silhouette_scores.append({"k": k_test, "silhouette_score": -1})  # Valore indicativo di errore
@@ -203,7 +202,7 @@ if __name__ == "__main__":
             num_rows_clustering = final_output_clustering_df.count()
             if num_rows_clustering > 0:
                 final_output_clustering_df.show(n=num_rows_clustering, truncate=False)
-                csv_output_path_clustering = os.path.join(base_data_path, "Q_Clustering_results.csv")
+                csv_output_path_clustering = os.path.join(base_data_path, "Q4_results")
                 final_output_clustering_df.coalesce(1).write.csv(csv_output_path_clustering, header=True, mode="overwrite")
                 print(f"Risultati Clustering Q salvati in CSV: {csv_output_path_clustering}")
             else:
