@@ -20,7 +20,7 @@ SELECTED_COUNTRIES = [
 ]
 
 def read_df(spark_session, paths_to_read, target_year=2024):
-    print(f"Lettura dati per clustering da {len(paths_to_read)} partizioni.")
+    print(f"Lettura dati per clustering da {len(paths_to_read)} partizioni")
 
     try:
         # Leggiamo tutti i dati disponibili per i paesi
@@ -35,7 +35,7 @@ def read_df(spark_session, paths_to_read, target_year=2024):
         print(f"Errore durante la lettura dei dati per clustering: {e}")
         raise
 
-    # 1. Filtra per l'anno target e aggrega per calcolare la media annua di carbon_intensity
+    # Filtraggio per l'anno target e aggrega per calcolare la media annua di carbon_intensity
     df_annual_avg = df_all_countries.where(F.col("year") == target_year) \
         .groupBy("country_code") \
         .agg(F.avg("carbon_intensity").alias("avg_carbon_intensity")) \
@@ -46,7 +46,7 @@ def read_df(spark_session, paths_to_read, target_year=2024):
         schema_output = "country_code STRING, avg_carbon_intensity_2024 DOUBLE, cluster_prediction INTEGER"
         return spark_session.createDataFrame([], schema_output), None, 0.0
 
-    # 2. Preparazione dati per K-Means
+    # Preparazione dati per K-Means
     assembler = VectorAssembler(
         inputCols=["avg_carbon_intensity"],
         outputCol="features",
@@ -61,14 +61,14 @@ def read_df(spark_session, paths_to_read, target_year=2024):
 
     return df_features
 
-def tuning_k(spark_session, paths_to_read):
+def silhouette_k(spark_session, paths_to_read):
     start_time_tuning = time.time()
 
     df_features = read_df(spark_session, paths_to_read)
 
     df_features.cache()  # Cache perché lo useremo per trovare K e per il modello finale
 
-    # 3. Determinazione del K Ottimale (usando Silhouette Score)
+    # Determinazione del K Ottimale (usando Silhouette Score)
     print("\nDeterminazione del K ottimale usando Silhouette Score...")
     silhouette_scores = []
     schema_silhouette = "k INTEGER, silhouette_score DOUBLE"
@@ -78,13 +78,10 @@ def tuning_k(spark_session, paths_to_read):
 
     for k_test in k_values:
         try:
-            kmeans_test = KMeans().setK(k_test).setSeed(1).setFeaturesCol("features").setPredictionCol(
-                "prediction_test")
+            kmeans_test = KMeans().setK(k_test).setSeed(1).setFeaturesCol("features").setPredictionCol("prediction_test")
             model_test = kmeans_test.fit(df_features)
             predictions_test = model_test.transform(df_features)
-
-            evaluator = ClusteringEvaluator().setPredictionCol("prediction_test").setFeaturesCol(
-                "features").setMetricName("silhouette").setDistanceMeasure("squaredEuclidean")
+            evaluator = ClusteringEvaluator().setPredictionCol("prediction_test").setFeaturesCol("features").setMetricName("silhouette").setDistanceMeasure("squaredEuclidean")
             silhouette = evaluator.evaluate(predictions_test)
             silhouette_scores.append({"k": k_test, "silhouette_score": silhouette})
         except Exception as e_k:
@@ -96,9 +93,8 @@ def tuning_k(spark_session, paths_to_read):
         optimal_k = 2
         silhouette_results_df = spark_session.createDataFrame([], schema_silhouette)
     else:
-        # Scegli il K con il Silhouette Score più alto
+        # Scelta del K con il Silhouette Score più alto
         silhouette_results_df = spark_session.createDataFrame(silhouette_scores, schema_silhouette)
-        # Filtra i punteggi validi
         valid_silhouette_df = silhouette_results_df.where(F.col("silhouette_score") >= -1.0)
         if not valid_silhouette_df.rdd.isEmpty():
             best_k_row = valid_silhouette_df.orderBy(F.col("silhouette_score").desc()).first()
@@ -125,15 +121,15 @@ def run_query_clustering(spark_session, paths_to_read, k):
     # Lettura dati da HDFS
     df_features = read_df(spark_session, paths_to_read)
 
-    # 4. Addestramento del Modello K-Means Finale con K ottimale
-    print(f"\nAddestramento del modello K-Means finale con K={k}...")
+    # Addestramento del Modello K-Means Finale con K ottimale
+    print(f"Addestramento del modello K-Means finale con K={k}")
     kmeans_final = KMeans().setK(int(k)).setSeed(1).setFeaturesCol("features").setPredictionCol("cluster_prediction") # Assicura che K sia int
     model_final = kmeans_final.fit(df_features)
 
-    # 5. Assegnazione Cluster
+    # Assegnazione Cluster
     predictions_final_df = model_final.transform(df_features)
 
-    # 6. Preparazione Output
+    # Preparazione Output
     output_df = predictions_final_df.select(
         F.col("country_code"),
         F.col("avg_carbon_intensity").alias(f"avg_carbon_intensity"),
@@ -163,11 +159,11 @@ if __name__ == "__main__":
     final_output_clustering_df = None
 
     print(f"\nEsecuzione Tuning per Clustering...")
-    optimal_k, silhouette_df, exec_time_tuning = tuning_k(spark, paths_to_read)
+    optimal_k, silhouette_df, exec_time_tuning = silhouette_k(spark, paths_to_read)
 
     print(f"\nEsecuzione della Query Clustering per {N_RUN_CLUSTERING} volte...")
     for i in range(N_RUN_CLUSTERING):
-        print(f"Esecuzione Clustering - Run {i + 1}/{N_RUN_CLUSTERING}")
+        print(f"\nEsecuzione Clustering - Run {i + 1}/{N_RUN_CLUSTERING}")
         try:
             result_clustering_df, exec_time = run_query_clustering(spark, paths_to_read, optimal_k)
             execution_times_clustering.append(exec_time)
@@ -184,7 +180,7 @@ if __name__ == "__main__":
         print(f"\n--- Statistiche Tempi Esecuzione Query Clustering  ---")
         print(f"Tempo di tuning: {exec_time_tuning:.4f} secondi")
         print(f"Tempi individuali: {[round(t, 4) for t in execution_times_clustering]}")
-        print(f"Tempo medio di esecuzione in ({len(execution_times_clustering)} runs): {avg_time_clustering:.4f} secondi")
+        print(f"Tempo medio di esecuzione in {len(execution_times_clustering)} runs: {avg_time_clustering:.4f} secondi")
         if len(execution_times_clustering) > 1:
             std_dev_time_clustering = statistics.stdev(execution_times_clustering)
             print(f"Deviazione standard dei tempi: {std_dev_time_clustering:.4f} secondi")

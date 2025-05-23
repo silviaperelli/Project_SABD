@@ -36,8 +36,6 @@ def run_query2(spark_session, path_to_read):
         spark_session.stop()
         exit()
 
-    print("\nEsecuzione della Query Q2...")
-
     # Aggregazione per (anno, mese)
     monthly_aggregated_it_df = df_processed.groupBy("year", "month") \
         .agg(
@@ -104,7 +102,7 @@ if __name__ == "__main__":
 
     print(f"\nEsecuzione della Query Q2 per {N_RUN} volte...")
     for i in range(N_RUN):
-        print(f"Esecuzione Q2 - Run {i + 1}/{N_RUN}")
+        print(f"\nEsecuzione Q2 - Run {i + 1}/{N_RUN}")
 
         result_df, monthly_df, exec_time = run_query2(spark, path_to_read)
         execution_times.append(exec_time)  # Aggiunge il tempo di esecuzione alla lista

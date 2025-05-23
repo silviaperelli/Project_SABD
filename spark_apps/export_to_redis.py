@@ -1,8 +1,7 @@
 import os
 import json
-import redis  # pip install redis
+import redis
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
 
 REDIS_HOST = "redis"  # Nome del servizio nel docker-compose
 REDIS_PORT = 6379
@@ -15,11 +14,9 @@ def get_redis_client():
 
 
 def export_q1_to_redis(spark, r):
-    print("Esportazione Q1 a Redis...")
+    print("\nEsportazione risultati Q1 su Redis...")
     try:
-        q1_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q1_results"), header=True, inferSchema=True) # Spark legge i dati dal path specificato
-        # Esempio formato output Q1: date, country_code, carbon_mean, carbon_min, carbon_max, cfe_mean, cfe_min, cfe_max
-        # 2021, IT, 280.08, 121.24, 439.06, 46.305932, 15.41, 77.02
+        q1_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q1_results"), header=True, inferSchema=True)
 
         collected_q1 = q1_df.collect() # raccolta dei dati sul driver Spark
         pipe = r.pipeline() # pipeline Redis
@@ -34,8 +31,7 @@ def export_q1_to_redis(spark, r):
 
 
 def export_q2_to_redis(spark, r):
-    print("Esportazione Q2 a Redis...")
-    # Q2 ha due parti: le classifiche e i dati per i grafici (medie mensili per IT)
+    print("\nEsportazione risultati Q2 su Redis...")
 
     # 1. Classifiche (prime 5)
     try:
@@ -75,7 +71,7 @@ def export_q2_to_redis(spark, r):
 
 
 def export_q3_to_redis(spark, r):
-    print("Esportazione Q3 a Redis...")
+    print("\nEsportazione risultati Q3 su Redis...")
 
     # 1. Statistiche
     try:
@@ -114,7 +110,7 @@ def export_q3_to_redis(spark, r):
 
 
 def export_q4_to_redis(spark, r):
-    print("Esportazione Risultati Clustering a Redis...")
+    print("\nEsportazione Risultati Clustering su Redis...")
     try:
         clustering_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q4_results"), header=True, inferSchema=True)
 

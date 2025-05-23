@@ -51,8 +51,6 @@ def run_query3(spark_session, paths_to_read):
         spark_session.stop()
         exit()
 
-    print("\nEsecuzione della Query Q3...")
-
     # 1. Aggregare i dati per paese e ora della giornata, calcolando la media
     hourly_avg_df = df_processed.groupBy("country_code", "year", "month", "day") \
         .agg(
@@ -103,7 +101,7 @@ if __name__ == "__main__":
 
     print(f"\nEsecuzione della Query Q3 per {N_RUN} volte...")
     for i in range(N_RUN):
-        print(f"Esecuzione Q3 - Run {i + 1}/{N_RUN}")
+        print(f"\nEsecuzione Q3 - Run {i + 1}/{N_RUN}")
 
         result_df, exec_time = run_query3(spark, paths_to_read)
         execution_times.append(exec_time)  # Aggiunge il tempo di esecuzione alla lista

@@ -12,7 +12,7 @@ if __name__ == "__main__":
     spark.sparkContext.setLogLevel("WARN")
 
     base_input_path_hdfs = "hdfs://namenode:8020/nifi_data/electricity_maps/"
-    print(f"Lettura dati da HDFS: {base_input_path_hdfs}*/*/*.parquet")
+    print(f"\nLettura dati da HDFS: {base_input_path_hdfs}*/*/*.parquet")
 
     try:
         df_raw = spark.read.parquet(base_input_path_hdfs + "*/*/*.parquet")
@@ -20,9 +20,6 @@ if __name__ == "__main__":
             print(f"ERRORE: Nessun file Parquet trovato in {base_input_path_hdfs}*/*/*.parquet")
             spark.stop()
             exit()
-
-        print("Schema dati grezzi (prima della rimozione colonne):")
-        df_raw.printSchema()
 
         columns_to_drop = [
             "Carbon_intensity_gCO_eq_kWh__Life_cycle_",
@@ -37,16 +34,12 @@ if __name__ == "__main__":
         columns_to_drop_actual = [c for c in columns_to_drop if c in existing_columns]
         if len(columns_to_drop_actual) > 0:
             df_raw = df_raw.drop(*columns_to_drop_actual)
-            print(f"Colonne rimosse: {columns_to_drop_actual}")
+            print(f"\nColonne rimosse: {columns_to_drop_actual}")
         else:
-            print("Nessuna delle colonne specificate per la rimozione è presente nel DataFrame.")
-
-        print("Schema dati grezzi (dopo la rimozione colonne):")
-        df_raw.printSchema()
-        df_raw.show(5, truncate=False)
+            print("\nNessuna delle colonne specificate per la rimozione è presente nel DataFrame.")
 
     except Exception as e:
-        print(f"Errore durante la lettura dei dati grezzi o la rimozione delle colonne: {e}")
+        print(f"\nErrore durante la lettura dei dati grezzi o la rimozione delle colonne: {e}")
         spark.stop()
         exit()
 
@@ -74,12 +67,11 @@ if __name__ == "__main__":
             "hour"
         ).orderBy("country", "datetime") # Ordinamento per una migliore leggibilità dell'output
 
-
-    print("Schema dati finali (aggregati per paese e timestamp):")
+    print("\nSchema dati finali (aggregati per paese e timestamp):")
     df_final.printSchema()
     df_final.show(10, truncate=False)
-    print(f"Numero totale di righe dopo aggregazione per paese e timestamp: {df_final.count()}")
-    print("Conteggio per country (dopo aggregazione per timestamp):")
+    print(f"\nNumero totale di righe dopo aggregazione per paese e timestamp: {df_final.count()}")
+    print("\nConteggio per country (dopo aggregazione per timestamp):")
     df_final.groupBy("country").count().orderBy("country").show(50)
 
     output_path_processed = "hdfs://namenode:8020/spark_data/spark"
@@ -93,5 +85,5 @@ if __name__ == "__main__":
         print(f"Errore salvataggio dati processati: {e}")
 
     end_time = time.time()
-    print(f"Tempo di esecuzione pre-processing e aggregazione per timestamp: {end_time - start_time:.2f} secondi")
+    print(f"\nTempo di esecuzione pre-processing e aggregazione per timestamp: {end_time - start_time:.2f} secondi")
     spark.stop()

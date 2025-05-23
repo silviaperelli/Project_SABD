@@ -28,8 +28,6 @@ def run_query1(spark_session, paths_to_read):
         spark_session.stop()
         exit()
 
-    print("\nEsecuzione della Query Q1...")
-
     # Esegui l'aggregazione
     annual_aggregated_df = df_processed.groupBy("year", "country_code") \
         .agg(
@@ -77,7 +75,7 @@ if __name__ == "__main__":
 
     print(f"\nEsecuzione della Query Q1 per {N_RUN} volte...")
     for i in range(N_RUN):
-        print(f"Esecuzione Q1 - Run {i + 1}/{N_RUN}")
+        print(f"\nEsecuzione Q1 - Run {i + 1}/{N_RUN}")
 
         result_df, exec_time = run_query1(spark, paths_to_read)
         execution_times.append(exec_time)  # Aggiunge il tempo di esecuzione alla lista
