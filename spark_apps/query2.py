@@ -8,7 +8,7 @@ N_RUN = 10
 
 def format_for_output(df_input):
     return df_input.select(
-        F.col("date_str").alias("date"),
+        F.col("date"),
         F.col("avg_carbon_intensity").alias("carbon_intensity"),
         F.col("avg_cfe").alias("cfe")
     )
@@ -43,8 +43,8 @@ def run_query2(spark_session, path_to_read):
         .agg(
         F.avg("carbon_intensity").alias("avg_carbon_intensity"),
         F.avg("carbon_free_percentage").alias("avg_cfe")) \
-        .withColumn("date_str", F.concat(F.col("year"), F.lit("_"), F.lpad(F.col("month"), 2, '0'))) \
-        .select("date_str", "avg_carbon_intensity", "avg_cfe", "year", "month")  # Mantenere year e month per ordinamenti
+        .withColumn("date", F.concat(F.col("year"), F.lit("_"), F.lpad(F.col("month"), 2, '0'))) \
+        .select("date", "avg_carbon_intensity", "avg_cfe", "year", "month")  # Mantenere year e month per ordinamenti
 
     monthly_aggregated_it_df.cache()
 
