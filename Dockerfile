@@ -5,7 +5,7 @@ USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends python3-pip \
     && pip3 install --no-cache-dir --upgrade pip \
-    && pip3 install --no-cache-dir numpy \
+    && pip3 install --no-cache-dir redis \
     && apt-get purge -y --auto-remove python3-pip \
     && rm -rf /var/lib/apt/lists/*
 

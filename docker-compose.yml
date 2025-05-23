@@ -130,6 +130,18 @@ services:
         condition: service_healthy
     networks:
       - sabd_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sabd_net
+    restart: always
+
 volumes:
   namenode_data:
   datanode_data:
@@ -140,6 +152,7 @@ volumes:
   nifi_data_provenance:
   nifi_data_state:
   nifi_data_logs:
+  redis_data:
 
 networks:
   sabd_net:
