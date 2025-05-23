@@ -67,7 +67,9 @@ services:
       retries: 5
 
   spark-master:
-    image: bitnami/spark:3.5
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: spark-master
     hostname: spark-master
     ports:
@@ -103,7 +105,9 @@ services:
       start_period: 30s
 
   spark-worker-1:
-    image: bitnami/spark:3.5
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: spark-worker-1
     hostname: spark-worker-1
     volumes:
