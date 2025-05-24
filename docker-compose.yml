@@ -142,6 +142,21 @@ services:
       - sabd_net
     restart: always
 
+  grafana:
+      image: grafana/grafana-oss:10.4.1
+      container_name: grafana
+      ports:
+        - "3000:3000"
+      volumes:
+        - grafana_data:/var/lib/grafana
+      environment:
+        - GF_INSTALL_PLUGINS=redis-datasource
+      networks:
+        - sabd_net
+      depends_on:
+        - redis
+      restart: always
+
 volumes:
   namenode_data:
   datanode_data:
@@ -153,6 +168,7 @@ volumes:
   nifi_data_state:
   nifi_data_logs:
   redis_data:
+  grafana_data:
 
 networks:
   sabd_net:
