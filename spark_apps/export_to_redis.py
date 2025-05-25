@@ -91,20 +91,24 @@ def export_q3_to_redis(spark, r):
     except Exception as e:
         print(f"Errore durante l'esportazione delle statistiche Q3: {e}")
 
-    # 2. Dati per i grafici di Q3 (medie orarie per IT e SE)
+    # 2. Dati per i grafici di Q3 (medie orarie per IT e SE) - MODIFICATO
     try:
         hourly_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q3_graphs"), header=True, inferSchema=True)
+        # Assicurati che hourly_df abbia le colonne: country_code, hour, avg_carbon_intensity, avg_cfe
 
         collected_q3_hourly = hourly_df.collect()
         pipe = r.pipeline()
         for row in collected_q3_hourly:
-            key_ci = f"q3:hourly_avg:{row['country_code']}:carbon_intensity:{row['hour']:02d}"
-            pipe.set(key_ci, row['avg_carbon_intensity'])
+            country = row['country_code']
+            hour_val = int(row['hour'])  # Assicurati che hour sia un intero per il formato :02d
 
-            key_cfe = f"q3:hourly_avg:{row['country_code']}:cfe:{row['hour']:02d}"
-            pipe.set(key_cfe, row['avg_cfe'])
+            # Dati per Carbon Intensity
+            key_ci = f"q3:hourly_avg:{country}:{hour_val:02d}"
+            value = json.dumps(row.asDict())
+            pipe.set(key_ci, value)
+
         pipe.execute()
-        print(f"Q3 Hourly Averages (IT/SE): {len(collected_q3_hourly) * 2} valori esportati.")  # *2 per CI e CFE
+        print(f"Q3 Hourly Averages (IT/SE): {len(collected_q3_hourly) * 2} JSON objects esportati.")
     except Exception as e:
         print(f"Errore durante l'esportazione delle medie orarie Q3: {e}")
 
@@ -168,10 +172,10 @@ if __name__ == "__main__":
         spark.stop()
         exit(1)
 
-    export_q1_to_redis(spark, redis_client)
-    export_q2_to_redis(spark, redis_client)  # Assicurati che Q2_monthly_avg_IT_results sia generato o calcolato
-    export_q3_to_redis(spark, redis_client)  # Assicurati che Q3_hourly_avg_results sia generato o calcolato
-    export_q4_to_redis(spark, redis_client)  # Assicurati che KMeans_results sia generato
+    # export_q1_to_redis(spark, redis_client)
+    # export_q2_to_redis(spark, redis_client)
+    export_q3_to_redis(spark, redis_client)
+    # export_q4_to_redis(spark, redis_client)
 
     print("Esportazione a Redis completata.")
     spark.stop()
