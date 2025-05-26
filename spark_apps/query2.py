@@ -1,10 +1,11 @@
-import statistics
 import time
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 import os
 
-N_RUN = 10
+from performance import print_performance
+
+N_RUN = 11
 
 def format_for_output(df_input):
     return df_input.select(
@@ -23,7 +24,7 @@ def run_query2(spark_session, path_to_read):
 
     print(f"Lettura dati dalle partizioni specifiche in HDFS: {path_to_read}")
     try:
-        # Leggi i dati Parquet specificando una lista di path
+        # Lettura dei dati Parquet specificando una lista di path
         df_processed = spark_session.read.parquet(path_to_read)
 
         if df_processed.rdd.isEmpty():
@@ -72,13 +73,65 @@ def run_query2(spark_session, path_to_read):
         .unionAll(cfe_desc_output) \
         .unionAll(cfe_asc_output)
 
-    monthly_aggregated_it_df.unpersist()  # Rimuovi dalla cache
+    monthly_aggregated_it_df.unpersist()  # Rimozione dalla cache
 
     final_df_q2.write.format("noop").mode("overwrite").save()
 
     end_time = time.time()
 
     return final_df_q2, monthly_aggregated_it_df, end_time - start_time
+
+def run_query2_spark_sql(spark_session, df_processed):
+    start_time = time.time()
+
+    print(f"Lettura dati dalle partizioni specifiche in HDFS: {path_to_read}")
+    try:
+        # Lettura dei dati Parquet specificando una lista di path
+        df_processed = spark_session.read.parquet(path_to_read)
+
+        if df_processed.rdd.isEmpty():
+            print(f"ERRORE: Nessun dato trovato nelle partizioni specificate: {path_to_read}")
+            spark_session.stop()
+            exit()
+
+    except Exception as e:
+        print(f"Errore durante la lettura dei dati dalle partizioni: {e}")
+        spark_session.stop()
+        exit()
+
+    df_processed.createOrReplaceTempView("q2_data_view")
+
+    query_monthly_aggregates_cte = """
+    WITH MonthlyAggregates AS (
+        SELECT
+            year,
+            month,
+            CONCAT(year, '_', LPAD(month, 2, '0')) AS date,
+            AVG(carbon_intensity) AS avg_carbon_intensity,
+            AVG(carbon_free_percentage) AS avg_cfe
+        FROM
+            q2_data_view
+        GROUP BY
+            year, month
+    )
+    """
+
+    query_q2_top_sql = query_monthly_aggregates_cte + """
+    (SELECT date, avg_carbon_intensity AS carbon_intensity, avg_cfe AS cfe FROM MonthlyAggregates ORDER BY avg_carbon_intensity DESC LIMIT 5)
+    UNION ALL
+    (SELECT date, avg_carbon_intensity AS carbon_intensity, avg_cfe AS cfe FROM MonthlyAggregates ORDER BY avg_carbon_intensity ASC LIMIT 5)
+    UNION ALL
+    (SELECT date, avg_carbon_intensity AS carbon_intensity, avg_cfe AS cfe FROM MonthlyAggregates ORDER BY avg_cfe DESC LIMIT 5)
+    UNION ALL
+    (SELECT date, avg_carbon_intensity AS carbon_intensity, avg_cfe AS cfe FROM MonthlyAggregates ORDER BY avg_cfe ASC LIMIT 5)
+    """
+    final_df_q2_sql = spark_session.sql(query_q2_top_sql)
+
+    # Azione per forzare l'esecuzione della query dei top 5
+    final_df_q2_sql.write.format("noop").mode("overwrite").save()
+
+    end_time = time.time()
+    return final_df_q2_sql, end_time - start_time
 
 
 if __name__ == "__main__":
@@ -111,17 +164,7 @@ if __name__ == "__main__":
             final_output_df_q2 = result_df
             final_monthly_df = monthly_df
 
-
-    # Calcola e stampa le statistiche dei tempi di esecuzione
-    if execution_times:
-        avg_time = statistics.mean(execution_times)
-        print(f"\n--- Statistiche Tempi Esecuzione Query Q2 ({N_RUN} runs) ---")
-        print(f"Tempi individuali: {[round(t, 4) for t in execution_times]}")
-        print(f"Tempo medio di esecuzione: {avg_time:.4f} secondi")
-        if len(execution_times) > 1:  # La deviazione standard richiede almeno 2 campioni
-            std_dev_time = statistics.stdev(execution_times)
-            print(f"Deviazione standard dei tempi: {std_dev_time:.4f} secondi")
-        print("----------------------------------------------------")
+    print_performance(execution_times, N_RUN, "Q2")
 
     if final_output_df_q2 and final_monthly_df:
         print("\nRisultati aggregati finali per Q2:")
@@ -134,6 +177,22 @@ if __name__ == "__main__":
         final_output_df_q2.coalesce(1).write.csv(csv_output_path, header=True, mode="overwrite")
         final_monthly_df.coalesce(1).write.csv(csv_graphs_path, header=True, mode="overwrite")
         print(f"Risultati Q2 salvati in CSV: {csv_output_path} e in {csv_graphs_path}")
+
+    execution_times_sql = []
+    output_df_q2_sql = None
+
+    print(f"\nEsecuzione della Query Q2 con Spark SQL per {N_RUN} volte...")
+    for i in range(N_RUN):
+        print(f"\nEsecuzione Q2 SQL - Run {i + 1}/{N_RUN}")
+        output_df_q2_sql, exec_time_sql = run_query2_spark_sql(spark, path_to_read)
+        execution_times_sql.append(exec_time_sql)  # Aggiunge il tempo di esecuzione alla lista
+        print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
+
+    print_performance(execution_times_sql, N_RUN, "Q2 Spark SQL")
+
+    if output_df_q2_sql:
+        print("\nRisultati finali per Q2 con Spark SQL:")
+        output_df_q2_sql.show(n=output_df_q2_sql.count(), truncate=False)
 
     end_time_script = time.time()
     print(f"\nTempo di esecuzione totale dello script: {end_time_script - start_time_script:.2f} secondi")
