@@ -101,10 +101,14 @@ def export_q3_to_redis(spark, r):
         for row in collected_q3_hourly:
             country = row['country_code']
             hour_val = int(row['hour'])  # Assicurati che hour sia un intero per il formato :02d
+            hour_str_padded = f"{hour_val:02d}"  # Es. "00", "01", ..., "23"
+            artificial_timestamp = f"2021-01-01T{hour_str_padded}:00:00Z"
 
-            # Dati per Carbon Intensity
-            key_ci = f"q3:hourly_avg:{country}:{hour_val:02d}"
-            value = json.dumps(row.asDict())
+            data_to_store = row.asDict()
+            data_to_store['time'] = artificial_timestamp
+
+            key_ci = f"q3:hourly_avg:{country}:{hour_str_padded}"
+            value = json.dumps(data_to_store)
             pipe.set(key_ci, value)
 
         pipe.execute()
@@ -172,10 +176,10 @@ if __name__ == "__main__":
         spark.stop()
         exit(1)
 
-    # export_q1_to_redis(spark, redis_client)
-    # export_q2_to_redis(spark, redis_client)
+    export_q1_to_redis(spark, redis_client)
+    export_q2_to_redis(spark, redis_client)
     export_q3_to_redis(spark, redis_client)
-    # export_q4_to_redis(spark, redis_client)
+    export_q4_to_redis(spark, redis_client)
 
     print("Esportazione a Redis completata.")
     spark.stop()

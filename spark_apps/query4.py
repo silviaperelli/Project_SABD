@@ -7,7 +7,7 @@ from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator # Per Silhouette Score
 import os
 
-N_RUN_CLUSTERING = 1
+N_RUN_CLUSTERING = 10
 
 # Lista dei 30 paesi
 SELECTED_COUNTRIES = [
