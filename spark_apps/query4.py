@@ -7,7 +7,7 @@ from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator # Per Silhouette Score
 import os
 
-N_RUN_CLUSTERING = 10
+N_RUN_CLUSTERING = 1
 
 # Lista dei 30 paesi
 SELECTED_COUNTRIES = [
@@ -157,6 +157,8 @@ if __name__ == "__main__":
 
     execution_times_clustering = []
     final_output_clustering_df = None
+    silhouette_df = None
+    exec_time_tuning = 0
 
     print(f"\nEsecuzione Tuning per Clustering...")
     optimal_k, silhouette_df, exec_time_tuning = silhouette_k(spark, paths_to_read)

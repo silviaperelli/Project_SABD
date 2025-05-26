@@ -112,7 +112,7 @@ def export_q3_to_redis(spark, r):
             pipe.set(key_ci, value)
 
         pipe.execute()
-        print(f"Q3 Hourly Averages (IT/SE): {len(collected_q3_hourly) * 2} JSON objects esportati.")
+        print(f"Q3 Hourly Averages (IT/SE): {len(collected_q3_hourly)} JSON objects esportati.")
     except Exception as e:
         print(f"Errore durante l'esportazione delle medie orarie Q3: {e}")
 
@@ -128,22 +128,10 @@ def export_q4_to_redis(spark, r):
         # Struttura 1: clustering:<country_code> -> cluster_id
         for row in collected_clustering:
             country = row['country_code']
-            cluster = row['cluster_prediction']  # Colonna dal clustering script
             key = f"clustering:{country}"
-            pipe.set(key, cluster)
-
-        # Struttura 2: clustering:cluster:<cluster_id> -> JSON lista paesi
-        clusters_map = {}
-        for row in collected_clustering:
-            country = row['country_code']
-            cluster = row['cluster_prediction']
-            if cluster not in clusters_map:
-                clusters_map[cluster] = []
-            clusters_map[cluster].append(country)
-
-        for cluster_id, countries in clusters_map.items():
-            key = f"clustering:cluster:{cluster_id}"
-            pipe.set(key, json.dumps(countries))
+            data_to_store = row.asDict()
+            value = json.dumps(data_to_store)
+            pipe.set(key, value)
 
         pipe.execute()
         print(f"Clustering: {len(collected_clustering)} paesi esportati.")
@@ -176,9 +164,9 @@ if __name__ == "__main__":
         spark.stop()
         exit(1)
 
-    export_q1_to_redis(spark, redis_client)
-    export_q2_to_redis(spark, redis_client)
-    export_q3_to_redis(spark, redis_client)
+    #export_q1_to_redis(spark, redis_client)
+    #export_q2_to_redis(spark, redis_client)
+    #export_q3_to_redis(spark, redis_client)
     export_q4_to_redis(spark, redis_client)
 
     print("Esportazione a Redis completata.")
