@@ -4,9 +4,9 @@ from pyspark.sql import functions as F
 import os
 
 from performance import print_performance
-from spark_apps.performance import log_performance_to_csv
+from performance import log_performance_to_csv
 
-N_RUN = 11
+N_RUN = 2
 
 # Query Q1: Aggregare i dati su base annua
 # Calcolare media, min, max di "Carbon intensity" e "Carbon-free energy percentage"
@@ -110,27 +110,13 @@ if __name__ == "__main__":
 
     spark = SparkSession.builder \
         .appName("ProjectSABD_Query1") \
+        .config("spark.executor.memory", "1g") \
+        .config("spark.executor.cores", "1") \
+        .config("spark.cores.max", "2") \
         .getOrCreate()
 
     sc = spark.sparkContext  # Ottieni SparkContext
     sc.setLogLevel("WARN")
-
-    num_executors_active = -1
-    try:
-        executor_status = spark.conf.get("spark.executor.instances")
-        if executor_status:
-            num_executors_active = len(executor_status)
-        else:  # Nessun executor riportato
-            if sc.master.startswith("local"):
-                num_executors_active = 1
-                print("Applicazione in esecuzione in modalità locale. Numero executor impostato a 1.")
-            else:
-                print("ERRORE: Nessun executor attivo riportato da getExecutorMemoryStatus(). Controlla la configurazione del cluster.")
-                num_executors_active = 0
-        print(f"Numero di executor attivi rilevati all'avvio: {num_executors_active}")
-    except Exception as e:
-        print(f"Errore nel recuperare il numero di executor: {e}. Impostato a -1.")
-        num_executors_active = -1
 
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
     paths_to_read = [
@@ -141,6 +127,9 @@ if __name__ == "__main__":
     execution_times = []  # Lista per memorizzare i tempi di ogni esecuzione della query
     final_output_df_q1 = None  # Per salvare il risultato dell'ultima esecuzione
 
+    num_executors_active = spark.conf.get("spark.cores.max")
+    print(f"Numero di executors {num_executors_active}")
+
     print(f"\nEsecuzione della Query Q1 per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Q1 - Run {i + 1}/{N_RUN}")
@@ -150,6 +139,7 @@ if __name__ == "__main__":
         print(f"Run {i + 1} completato in {exec_time:.4f} secondi.")
         if i == N_RUN - 1:  # Se è l'ultima esecuzione, salva il DataFrame risultato
             final_output_df_q1 = result_df
+
 
     avg_time = print_performance(execution_times, N_RUN, "Q1")
     log_performance_to_csv(spark, "Q1", "dataframe", avg_time, num_executors_active, N_RUN-1)
