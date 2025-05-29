@@ -4,6 +4,7 @@ from pyspark.sql import functions as F
 import os
 
 from performance import print_performance
+from spark_apps.performance import log_performance_to_csv
 
 N_RUN = 11
 
@@ -111,7 +112,25 @@ if __name__ == "__main__":
         .appName("ProjectSABD_Query1") \
         .getOrCreate()
 
-    spark.sparkContext.setLogLevel("WARN")
+    sc = spark.sparkContext  # Ottieni SparkContext
+    sc.setLogLevel("WARN")
+
+    num_executors_active = -1
+    try:
+        executor_status = spark.conf.get("spark.executor.instances")
+        if executor_status:
+            num_executors_active = len(executor_status)
+        else:  # Nessun executor riportato
+            if sc.master.startswith("local"):
+                num_executors_active = 1
+                print("Applicazione in esecuzione in modalità locale. Numero executor impostato a 1.")
+            else:
+                print("ERRORE: Nessun executor attivo riportato da getExecutorMemoryStatus(). Controlla la configurazione del cluster.")
+                num_executors_active = 0
+        print(f"Numero di executor attivi rilevati all'avvio: {num_executors_active}")
+    except Exception as e:
+        print(f"Errore nel recuperare il numero di executor: {e}. Impostato a -1.")
+        num_executors_active = -1
 
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
     paths_to_read = [
@@ -132,7 +151,8 @@ if __name__ == "__main__":
         if i == N_RUN - 1:  # Se è l'ultima esecuzione, salva il DataFrame risultato
             final_output_df_q1 = result_df
 
-    print_performance(execution_times, N_RUN, "Q1")
+    avg_time = print_performance(execution_times, N_RUN, "Q1")
+    log_performance_to_csv(spark, "Q1", "dataframe", avg_time, num_executors_active, N_RUN-1)
 
     if final_output_df_q1:
         print("\nRisultati aggregati finali per Q1:")
@@ -154,7 +174,8 @@ if __name__ == "__main__":
         execution_times_sql.append(exec_time_sql)  # Aggiunge il tempo di esecuzione alla lista
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
-    print_performance(execution_times_sql, N_RUN, "Q1 Spark SQL")
+    avg_time_sql = print_performance(execution_times_sql, N_RUN, "Q1 Spark SQL")
+    log_performance_to_csv(spark, "Q1", "sql", avg_time_sql, num_executors_active, N_RUN-1)
 
     if output_df_q1_sql:
         print("\nRisultati finali per Q1 con Spark SQL:")
