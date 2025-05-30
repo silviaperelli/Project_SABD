@@ -116,7 +116,7 @@ if __name__ == "__main__":
         print(f"Run {i + 1} completato in {exec_time_rdd:.4f} secondi.")
 
     avg_time_rdd = performance.print_performance(execution_times_rdd, N_RUN, "Q1 Spark RDD")
-    performance.log_performance_to_csv(spark, "Q1", "rdd", avg_time_rdd, 1, N_RUN - 1)
+    performance.log_performance_to_csv(spark, "Q1", "rdd", avg_time_rdd, 1)
 
     if output_df_q1_rdd:
         print("\nRisultati finali per Q1 con RDD:")

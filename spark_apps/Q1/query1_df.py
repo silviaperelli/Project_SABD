@@ -73,7 +73,7 @@ if __name__ == "__main__":
         .appName("ProjectSABD_Query1") \
         .config("spark.executor.memory", "1g") \
         .config("spark.executor.cores", "1") \
-        .config("spark.cores.max", "2") \
+        .config("spark.cores.max", "1") \
         .getOrCreate()
 
     sc = spark.sparkContext  # Ottieni SparkContext
@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
 
     avg_time = performance.print_performance(execution_times, N_RUN, "Q1")
-    performance.log_performance_to_csv(spark, "Q1", "dataframe", avg_time, num_executors_active, N_RUN-1)
+    performance.log_performance_to_csv(spark, "Q1", "dataframe", avg_time, num_executors_active)
 
     if final_output_df_q1:
         print("\nRisultati aggregati finali per Q1:")

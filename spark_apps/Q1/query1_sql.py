@@ -104,7 +104,7 @@ if __name__ == "__main__":
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
     avg_time_sql = performance.print_performance(execution_times_sql, N_RUN, "Q1 Spark SQL")
-    performance.log_performance_to_csv(spark, "Q1", "sql", avg_time_sql, num_executors_active, N_RUN-1)
+    performance.log_performance_to_csv(spark, "Q1", "sql", avg_time_sql, num_executors_active)
 
     if output_df_q1_sql:
         print("\nRisultati finali per Q1 con Spark SQL:")
