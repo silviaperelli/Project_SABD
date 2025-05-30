@@ -7,7 +7,21 @@ from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator # Per Silhouette Score
 import os
 
-N_RUN_CLUSTERING = 10
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    import performance
+except ImportError as e:
+    print(f"Errore nell'importare 'performance': {e}")
+    print(f"sys.path attuale: {sys.path}")
+
+
+N_RUN = 10
 
 # Lista dei 30 paesi
 SELECTED_COUNTRIES = [
@@ -163,18 +177,20 @@ if __name__ == "__main__":
     print(f"\nEsecuzione Tuning per Clustering...")
     optimal_k, silhouette_df, exec_time_tuning = silhouette_k(spark, paths_to_read)
 
-    print(f"\nEsecuzione della Query Clustering per {N_RUN_CLUSTERING} volte...")
-    for i in range(N_RUN_CLUSTERING):
-        print(f"\nEsecuzione Clustering - Run {i + 1}/{N_RUN_CLUSTERING}")
+    print(f"\nEsecuzione della Query Clustering per {N_RUN} volte...")
+    for i in range(N_RUN):
+        print(f"\nEsecuzione Clustering - Run {i + 1}/{N_RUN}")
         try:
             result_clustering_df, exec_time = run_query_clustering(spark, paths_to_read, optimal_k)
             execution_times_clustering.append(exec_time)
             print(f"Run {i + 1} completato in {exec_time:.4f} secondi.")
-            if i == N_RUN_CLUSTERING - 1: # Salva i risultati dell'ultimo run
+            if i == N_RUN - 1: # Salva i risultati dell'ultimo run
                 final_output_clustering_df = result_clustering_df
         except Exception as e:
             print(f"ERRORE durante l'esecuzione del Run {i + 1} per Clustering: {e}")
             break
+
+    performance.print_performance(execution_times_clustering, N_RUN, "Clustering")
 
     # Statistiche dei tempi
     if execution_times_clustering:

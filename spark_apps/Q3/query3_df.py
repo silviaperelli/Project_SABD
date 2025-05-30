@@ -3,7 +3,19 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 import os
 
-from spark_apps.performance import print_performance
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    import performance
+except ImportError as e:
+    print(f"Errore nell'importare 'performance': {e}")
+    print(f"sys.path attuale: {sys.path}")
+
 
 N_RUN = 11
 
@@ -111,7 +123,7 @@ if __name__ == "__main__":
             final_output_df_q3 = result_df
             final_hourly_df = hourly_df
 
-    print_performance(execution_times, N_RUN, "Q3")
+    performance.print_performance(execution_times, N_RUN, "Q3")
 
     if final_output_df_q3 and final_hourly_df:
         print("\nRisultati aggregati finali per Q3:")

@@ -2,8 +2,19 @@ import time
 from pyspark.sql import SparkSession
 from pyspark.sql import Row
 import os
+import sys
 
-from spark_apps.performance import print_performance, log_performance_to_csv
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    import performance
+except ImportError as e:
+    print(f"Errore nell'importare 'performance': {e}")
+    print(f"sys.path attuale: {sys.path}")
+
 
 N_RUN = 2
 
@@ -104,8 +115,8 @@ if __name__ == "__main__":
         execution_times_rdd.append(exec_time_rdd)  # Aggiunge il tempo di esecuzione alla lista
         print(f"Run {i + 1} completato in {exec_time_rdd:.4f} secondi.")
 
-    avg_time_rdd = print_performance(execution_times_rdd, N_RUN, "Q1 Spark RDD")
-    log_performance_to_csv(spark, "Q1", "rdd", avg_time_rdd, 1, N_RUN - 1)
+    avg_time_rdd = performance.print_performance(execution_times_rdd, N_RUN, "Q1 Spark RDD")
+    performance.log_performance_to_csv(spark, "Q1", "rdd", avg_time_rdd, 1, N_RUN - 1)
 
     if output_df_q1_rdd:
         print("\nRisultati finali per Q1 con RDD:")

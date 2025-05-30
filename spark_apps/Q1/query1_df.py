@@ -2,8 +2,18 @@ import time
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 import os
+import sys
 
-from spark_apps.performance import print_performance, log_performance_to_csv
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    import performance
+except ImportError as e:
+    print(f"Errore nell'importare 'performance': {e}")
+    print(f"sys.path attuale: {sys.path}")
 
 N_RUN = 2
 
@@ -92,8 +102,8 @@ if __name__ == "__main__":
             final_output_df_q1 = result_df
 
 
-    avg_time = print_performance(execution_times, N_RUN, "Q1")
-    log_performance_to_csv(spark, "Q1", "dataframe", avg_time, num_executors_active, N_RUN-1)
+    avg_time = performance.print_performance(execution_times, N_RUN, "Q1")
+    performance.log_performance_to_csv(spark, "Q1", "dataframe", avg_time, num_executors_active, N_RUN-1)
 
     if final_output_df_q1:
         print("\nRisultati aggregati finali per Q1:")

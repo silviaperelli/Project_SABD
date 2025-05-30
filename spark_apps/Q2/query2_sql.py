@@ -3,7 +3,19 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 import os
 
-from spark_apps.performance import print_performance
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    import performance
+except ImportError as e:
+    print(f"Errore nell'importare 'performance': {e}")
+    print(f"sys.path attuale: {sys.path}")
+
 
 N_RUN = 11
 
@@ -97,7 +109,7 @@ if __name__ == "__main__":
         execution_times_sql.append(exec_time_sql)  # Aggiunge il tempo di esecuzione alla lista
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
-    print_performance(execution_times_sql, N_RUN, "Q2 Spark SQL")
+    performance.print_performance(execution_times_sql, N_RUN, "Q2 Spark SQL")
 
     if output_df_q2_sql:
         print("\nRisultati finali per Q2 con Spark SQL:")
