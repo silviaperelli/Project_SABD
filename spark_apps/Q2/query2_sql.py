@@ -84,7 +84,7 @@ def run_query2_spark_sql(spark_session, df_processed):
     return final_df_q2_sql, end_time - start_time
 
 
-if __name__ == "__main__":
+def query2_sql(num_executor):
     start_time_script = time.time()
 
     spark = SparkSession.builder \

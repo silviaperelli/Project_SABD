@@ -157,7 +157,7 @@ def run_query_clustering(spark_session, paths_to_read, k):
     return output_df, end_time - start_time
 
 
-if __name__ == "__main__":
+def query4_df(num_executor):
     start_time_script = time.time()
 
     spark = SparkSession.builder \

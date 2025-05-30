@@ -111,7 +111,7 @@ def run_query3_spark_sql(spark_session, df_processed):
     return final_stats_df_q3_sql, end_time - start_time
 
 
-if __name__ == "__main__":
+def query3_sql(num_executor):
     start_time_script = time.time()
 
     spark = SparkSession.builder \

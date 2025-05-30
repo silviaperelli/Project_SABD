@@ -94,7 +94,7 @@ def run_query2(spark_session, path_to_read):
     return final_df_q2, monthly_aggregated_it_df, end_time - start_time
 
 
-if __name__ == "__main__":
+def query2_df(num_executor):
     start_time_script = time.time()
 
     spark = SparkSession.builder \

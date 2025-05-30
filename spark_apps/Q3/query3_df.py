@@ -92,7 +92,7 @@ def run_query3(spark_session, paths_to_read):
 
     return final_stats_df_q3, hourly_avg_df, end_time - start_time
 
-if __name__ == "__main__":
+def query3_df(num_executor):
     start_time_script = time.time()
 
     spark = SparkSession.builder \

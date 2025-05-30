@@ -66,14 +66,14 @@ def run_query1(spark_session, paths_to_read):
     return output_df_q1, end_time - start_time
 
 
-if __name__ == "__main__":
+def query1_df(num_executor):
     start_time_script = time.time()
 
     spark = SparkSession.builder \
         .appName("ProjectSABD_Query1") \
         .config("spark.executor.memory", "1g") \
         .config("spark.executor.cores", "1") \
-        .config("spark.cores.max", "1") \
+        .config("spark.cores.max", num_executor) \
         .getOrCreate()
 
     sc = spark.sparkContext  # Ottieni SparkContext

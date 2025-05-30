@@ -71,15 +71,14 @@ def run_query1_spark_sql(spark_session, paths_to_read):
     return output_df_q1_sql, end_time - start_time
 
 
-if __name__ == "__main__":
+def query1_sql(num_executor):
     start_time_script = time.time()
-    num="1"
 
     spark = SparkSession.builder \
         .appName("ProjectSABD_Query1") \
         .config("spark.executor.memory", "1g") \
         .config("spark.executor.cores", "1") \
-        .config("spark.cores.max", num) \
+        .config("spark.cores.max", num_executor) \
         .getOrCreate()
 
     sc = spark.sparkContext  # Ottieni SparkContext
@@ -105,7 +104,7 @@ if __name__ == "__main__":
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
     avg_time_sql = performance.print_performance(execution_times_sql, N_RUN, "Q1 Spark SQL")
-    #performance.log_performance_to_csv(spark, "Q1", "sql", avg_time_sql, num_executors_active)
+    performance.log_performance_to_csv(spark, "Q1", "sql", avg_time_sql, num_executors_active)
 
     if output_df_q1_sql:
         print("\nRisultati finali per Q1 con Spark SQL:")
