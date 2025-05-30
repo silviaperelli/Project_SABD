@@ -138,13 +138,44 @@ def export_q4_to_redis(spark, r):
     except Exception as e:
         print(f"Errore durante l'esportazione dei risultati del Clustering: {e}")
 
+
+def export_performance_to_redis(spark, r):
+    print("\nEsportazione dati di performance su Redis...")
+    total_rows_exported = 0
+
+    query_data_path = os.path.join(HDFS_BASE_PATH, "performance/**/*.csv")
+
+    try:
+        performance_df = spark.read.csv(query_data_path, header=True, inferSchema=True)
+        collected_data = performance_df.collect()
+
+        if not collected_data:
+            print(f"Nessun dato trovato nella directory")
+            return 0
+
+        pipe = r.pipeline()
+        query_rows = 0
+        for row in collected_data:
+            key = f"performance:{row['query_name']}:{row['query_type']}:{row['num_executors']}"
+            data_to_store = row.asDict()
+            value = json.dumps(data_to_store)
+            pipe.set(key, value)
+            query_rows += 1
+
+        pipe.execute()
+        total_rows_exported += query_rows
+
+    except Exception as e:
+        print(f"Errore durante l'esportazione dei dati delle performance: {e}")
+
+    print(f"Esportazione completata. Totale righe esportate su Redis: {total_rows_exported}")
+
 def hdfs_path_exists(spark_session, path):
     # path should be "hdfs://namenode:8020/..."
     sc = spark_session.sparkContext
     uri = sc._jvm.java.net.URI(path)
     fs = sc._jvm.org.apache.hadoop.fs.FileSystem.get(uri, sc._jsc.hadoopConfiguration())
     return fs.exists(sc._jvm.org.apache.hadoop.fs.Path(path))
-
 
 if __name__ == "__main__":
     spark = SparkSession.builder \
@@ -168,6 +199,7 @@ if __name__ == "__main__":
     export_q2_to_redis(spark, redis_client)
     export_q3_to_redis(spark, redis_client)
     export_q4_to_redis(spark, redis_client)
+    export_performance_to_redis(spark, redis_client)
 
     print("Esportazione a Redis completata.")
     spark.stop()

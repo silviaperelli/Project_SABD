@@ -89,6 +89,9 @@ if __name__ == "__main__":
 
     spark = SparkSession.builder \
         .appName("ProjectSABD_Query2") \
+        .config("spark.executor.memory", "1g") \
+        .config("spark.executor.cores", "1") \
+        .config("spark.cores.max", "2") \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -102,6 +105,9 @@ if __name__ == "__main__":
     execution_times_sql = []
     output_df_q2_sql = None
 
+    num_executors_active = spark.conf.get("spark.cores.max")
+    print(f"Numero di executors {num_executors_active}")
+
     print(f"\nEsecuzione della Query Q2 con Spark SQL per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Q2 SQL - Run {i + 1}/{N_RUN}")
@@ -109,7 +115,8 @@ if __name__ == "__main__":
         execution_times_sql.append(exec_time_sql)  # Aggiunge il tempo di esecuzione alla lista
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
-    performance.print_performance(execution_times_sql, N_RUN, "Q2 Spark SQL")
+    avg_time_sql = performance.print_performance(execution_times_sql, N_RUN, "Q2 Spark SQL")
+    performance.log_performance_to_csv(spark, "Q2", "sql", avg_time_sql, num_executors_active)
 
     if output_df_q2_sql:
         print("\nRisultati finali per Q2 con Spark SQL:")

@@ -162,6 +162,9 @@ if __name__ == "__main__":
 
     spark = SparkSession.builder \
         .appName("ProjectSABD_Query_Clustering") \
+        .config("spark.executor.memory", "1g") \
+        .config("spark.executor.cores", "1") \
+        .config("spark.cores.max", "1") \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -173,6 +176,9 @@ if __name__ == "__main__":
     final_output_clustering_df = None
     silhouette_df = None
     exec_time_tuning = 0
+
+    num_executors_active = spark.conf.get("spark.cores.max")
+    print(f"Numero di executors {num_executors_active}")
 
     print(f"\nEsecuzione Tuning per Clustering...")
     optimal_k, silhouette_df, exec_time_tuning = silhouette_k(spark, paths_to_read)
@@ -190,7 +196,8 @@ if __name__ == "__main__":
             print(f"ERRORE durante l'esecuzione del Run {i + 1} per Clustering: {e}")
             break
 
-    performance.print_performance(execution_times_clustering, N_RUN, "Clustering")
+    avg_time = performance.print_performance(execution_times_clustering, N_RUN, "Clustering")
+    performance.log_performance_to_csv(spark, "Q4", "dataframe", avg_time, num_executors_active)
 
     # Statistiche dei tempi
     if execution_times_clustering:

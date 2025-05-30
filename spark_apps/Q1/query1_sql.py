@@ -73,12 +73,13 @@ def run_query1_spark_sql(spark_session, paths_to_read):
 
 if __name__ == "__main__":
     start_time_script = time.time()
+    num="1"
 
     spark = SparkSession.builder \
         .appName("ProjectSABD_Query1") \
         .config("spark.executor.memory", "1g") \
         .config("spark.executor.cores", "1") \
-        .config("spark.cores.max", "2") \
+        .config("spark.cores.max", num) \
         .getOrCreate()
 
     sc = spark.sparkContext  # Ottieni SparkContext
@@ -90,11 +91,11 @@ if __name__ == "__main__":
         os.path.join(base_data_path, "country=Sweden")
     ]
 
-    num_executors_active = spark.conf.get("spark.cores.max")
-    print(f"Numero di executors {num_executors_active}")
-
     execution_times_sql = []
     output_df_q1_sql = None
+
+    num_executors_active = spark.conf.get("spark.cores.max")
+    print(f"Numero di executors {num_executors_active}")
 
     print(f"\nEsecuzione della Query Q1 con Spark SQL per {N_RUN} volte...")
     for i in range(N_RUN):
@@ -104,7 +105,7 @@ if __name__ == "__main__":
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
     avg_time_sql = performance.print_performance(execution_times_sql, N_RUN, "Q1 Spark SQL")
-    performance.log_performance_to_csv(spark, "Q1", "sql", avg_time_sql, num_executors_active)
+    #performance.log_performance_to_csv(spark, "Q1", "sql", avg_time_sql, num_executors_active)
 
     if output_df_q1_sql:
         print("\nRisultati finali per Q1 con Spark SQL:")

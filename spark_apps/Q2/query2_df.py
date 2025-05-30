@@ -99,6 +99,9 @@ if __name__ == "__main__":
 
     spark = SparkSession.builder \
         .appName("ProjectSABD_Query2") \
+        .config("spark.executor.memory", "1g") \
+        .config("spark.executor.cores", "1") \
+        .config("spark.cores.max", "1") \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -113,6 +116,9 @@ if __name__ == "__main__":
     final_output_df_q2 = None  # Per salvare il risultato dell'ultima esecuzione
     final_monthly_df = None # Per salvare il dataframe aggregato su coppia (anno, mese)
 
+    num_executors_active = spark.conf.get("spark.cores.max")
+    print(f"Numero di executors {num_executors_active}")
+
     print(f"\nEsecuzione della Query Q2 per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Q2 - Run {i + 1}/{N_RUN}")
@@ -124,7 +130,8 @@ if __name__ == "__main__":
             final_output_df_q2 = result_df
             final_monthly_df = monthly_df
 
-    performance.print_performance(execution_times, N_RUN, "Q2")
+    avg_time = performance.print_performance(execution_times, N_RUN, "Q2")
+    performance.log_performance_to_csv(spark, "Q2", "dataframe", avg_time, num_executors_active)
 
     if final_output_df_q2 and final_monthly_df:
         print("\nRisultati aggregati finali per Q2:")

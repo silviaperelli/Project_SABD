@@ -97,6 +97,9 @@ if __name__ == "__main__":
 
     spark = SparkSession.builder \
         .appName("ProjectSABD_Query3") \
+        .config("spark.executor.memory", "1g") \
+        .config("spark.executor.cores", "1") \
+        .config("spark.cores.max", "2") \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -112,6 +115,9 @@ if __name__ == "__main__":
     final_output_df_q3 = None  # Per salvare il risultato dell'ultima esecuzione
     final_hourly_df = None # Per salvare il dataframe aggregato sulle 24 ore
 
+    num_executors_active = spark.conf.get("spark.cores.max")
+    print(f"Numero di executors {num_executors_active}")
+
     print(f"\nEsecuzione della Query Q3 per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Q3 - Run {i + 1}/{N_RUN}")
@@ -123,7 +129,8 @@ if __name__ == "__main__":
             final_output_df_q3 = result_df
             final_hourly_df = hourly_df
 
-    performance.print_performance(execution_times, N_RUN, "Q3")
+    avg_time = performance.print_performance(execution_times, N_RUN, "Q3")
+    performance.log_performance_to_csv(spark, "Q3", "dataframe", avg_time, num_executors_active)
 
     if final_output_df_q3 and final_hourly_df:
         print("\nRisultati aggregati finali per Q3:")
