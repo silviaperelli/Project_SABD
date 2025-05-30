@@ -164,9 +164,9 @@ if __name__ == "__main__":
         spark.stop()
         exit(1)
 
-    #export_q1_to_redis(spark, redis_client)
-    #export_q2_to_redis(spark, redis_client)
-    #export_q3_to_redis(spark, redis_client)
+    export_q1_to_redis(spark, redis_client)
+    export_q2_to_redis(spark, redis_client)
+    export_q3_to_redis(spark, redis_client)
     export_q4_to_redis(spark, redis_client)
 
     print("Esportazione a Redis completata.")
