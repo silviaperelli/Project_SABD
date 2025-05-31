@@ -88,9 +88,6 @@ def query1_df(num_executor):
     execution_times = []  # Lista per memorizzare i tempi di ogni esecuzione della query
     final_output_df_q1 = None  # Per salvare il risultato dell'ultima esecuzione
 
-    num_executors_active = spark.conf.get("spark.cores.max")
-    print(f"Numero di executors {num_executors_active}")
-
     print(f"\nEsecuzione della Query Q1 per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Q1 - Run {i + 1}/{N_RUN}")
@@ -103,7 +100,7 @@ def query1_df(num_executor):
 
 
     avg_time = performance.print_performance(execution_times, N_RUN, "Q1")
-    performance.log_performance_to_csv(spark, "Q1", "dataframe", avg_time, num_executors_active)
+    performance.log_performance_to_csv(spark, "Q1", "dataframe", avg_time, num_executor)
 
     if final_output_df_q1:
         print("\nRisultati aggregati finali per Q1:")

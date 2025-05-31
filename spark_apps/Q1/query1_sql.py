@@ -93,9 +93,6 @@ def query1_sql(num_executor):
     execution_times_sql = []
     output_df_q1_sql = None
 
-    num_executors_active = spark.conf.get("spark.cores.max")
-    print(f"Numero di executors {num_executors_active}")
-
     print(f"\nEsecuzione della Query Q1 con Spark SQL per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Q1 SQL - Run {i + 1}/{N_RUN}")
@@ -104,7 +101,7 @@ def query1_sql(num_executor):
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
     avg_time_sql = performance.print_performance(execution_times_sql, N_RUN, "Q1 Spark SQL")
-    performance.log_performance_to_csv(spark, "Q1", "sql", avg_time_sql, num_executors_active)
+    performance.log_performance_to_csv(spark, "Q1", "sql", avg_time_sql, num_executor)
 
     if output_df_q1_sql:
         print("\nRisultati finali per Q1 con Spark SQL:")

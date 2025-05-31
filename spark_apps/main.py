@@ -3,7 +3,7 @@ from Q1.query1_rdd import *
 from Q1.query1_sql import *
 
 from Q2.query2_df  import *
-#from Q2.query2_rdd import *
+from Q2.query2_rdd import *
 from Q2.query2_sql import *
 
 from Q3.query3_df import *
@@ -23,10 +23,10 @@ def test_query1():
 
 def test_query2():
     print("\n--------Query 2--------")
-    num_executor = ["1", "2", "3", "4"]
+    num_executor = ["1"]
     for i in num_executor:
         query2_df(i)
-        #query2_rdd(i)
+        query2_rdd(i)
         query2_sql(i)
 
     print("Test completati")

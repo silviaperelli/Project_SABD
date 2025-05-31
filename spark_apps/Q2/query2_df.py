@@ -17,7 +17,7 @@ except ImportError as e:
     print(f"sys.path attuale: {sys.path}")
 
 
-N_RUN = 11
+N_RUN = 2
 
 def format_for_output(df_input):
     return df_input.select(
@@ -101,7 +101,7 @@ def query2_df(num_executor):
         .appName("ProjectSABD_Query2") \
         .config("spark.executor.memory", "1g") \
         .config("spark.executor.cores", "1") \
-        .config("spark.cores.max", "1") \
+        .config("spark.cores.max", num_executor) \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -116,9 +116,6 @@ def query2_df(num_executor):
     final_output_df_q2 = None  # Per salvare il risultato dell'ultima esecuzione
     final_monthly_df = None # Per salvare il dataframe aggregato su coppia (anno, mese)
 
-    num_executors_active = spark.conf.get("spark.cores.max")
-    print(f"Numero di executors {num_executors_active}")
-
     print(f"\nEsecuzione della Query Q2 per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Q2 - Run {i + 1}/{N_RUN}")
@@ -131,7 +128,7 @@ def query2_df(num_executor):
             final_monthly_df = monthly_df
 
     avg_time = performance.print_performance(execution_times, N_RUN, "Q2")
-    performance.log_performance_to_csv(spark, "Q2", "dataframe", avg_time, num_executors_active)
+    performance.log_performance_to_csv(spark, "Q2", "dataframe", avg_time, num_executor)
 
     if final_output_df_q2 and final_monthly_df:
         print("\nRisultati aggregati finali per Q2:")

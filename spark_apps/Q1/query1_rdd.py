@@ -102,9 +102,6 @@ def query1_rdd(num_executor):
         os.path.join(base_data_path, "country=Sweden")
     ]
 
-    num_executors_active = spark.conf.get("spark.cores.max")
-    print(f"Numero di executors {num_executors_active}")
-
     execution_times_rdd = []
     output_df_q1_rdd = None
 
@@ -116,7 +113,7 @@ def query1_rdd(num_executor):
         print(f"Run {i + 1} completato in {exec_time_rdd:.4f} secondi.")
 
     avg_time_rdd = performance.print_performance(execution_times_rdd, N_RUN, "Q1 Spark RDD")
-    performance.log_performance_to_csv(spark, "Q1", "rdd", avg_time_rdd, 1)
+    performance.log_performance_to_csv(spark, "Q1", "rdd", avg_time_rdd, num_executor)
 
     if output_df_q1_rdd:
         print("\nRisultati finali per Q1 con RDD:")

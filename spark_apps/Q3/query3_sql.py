@@ -24,7 +24,7 @@ N_RUN = 11
 # e “Carbon-free energy percentage (CFE%)”. Calcolare il minimo, 25-esimo, 50-esimo, 75-esimo percentile
 # e massimo del valor medio di “Carbon intensity gCO2eq/kWh (direct)” e “Carbon-free energy percentage (CFE%)”.
 
-def run_query3_spark_sql(spark_session, df_processed):
+def run_query3_spark_sql(spark_session, paths_to_read):
     start_time = time.time()
 
     print(f"Lettura dati dalle partizioni specifiche in HDFS: {paths_to_read}")

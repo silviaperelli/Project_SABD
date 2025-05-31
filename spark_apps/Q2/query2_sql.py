@@ -17,7 +17,7 @@ except ImportError as e:
     print(f"sys.path attuale: {sys.path}")
 
 
-N_RUN = 11
+N_RUN = 2
 
 def format_for_output(df_input):
     return df_input.select(
@@ -31,7 +31,7 @@ def format_for_output(df_input):
 # Calcolare la classifica delle prime 5 coppie ordinando per “Carbon intensity” decrescente, crescente e
 # “Carbon-free energy percentage” decrescente, crescente.
 
-def run_query2_spark_sql(spark_session, df_processed):
+def run_query2_spark_sql(spark_session, path_to_read):
     start_time = time.time()
 
     print(f"Lettura dati dalle partizioni specifiche in HDFS: {path_to_read}")
@@ -91,7 +91,7 @@ def query2_sql(num_executor):
         .appName("ProjectSABD_Query2") \
         .config("spark.executor.memory", "1g") \
         .config("spark.executor.cores", "1") \
-        .config("spark.cores.max", "2") \
+        .config("spark.cores.max", num_executor) \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -105,8 +105,6 @@ def query2_sql(num_executor):
     execution_times_sql = []
     output_df_q2_sql = None
 
-    num_executors_active = spark.conf.get("spark.cores.max")
-    print(f"Numero di executors {num_executors_active}")
 
     print(f"\nEsecuzione della Query Q2 con Spark SQL per {N_RUN} volte...")
     for i in range(N_RUN):
@@ -116,7 +114,7 @@ def query2_sql(num_executor):
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
     avg_time_sql = performance.print_performance(execution_times_sql, N_RUN, "Q2 Spark SQL")
-    performance.log_performance_to_csv(spark, "Q2", "sql", avg_time_sql, num_executors_active)
+    performance.log_performance_to_csv(spark, "Q2", "sql", avg_time_sql, num_executor)
 
     if output_df_q2_sql:
         print("\nRisultati finali per Q2 con Spark SQL:")
