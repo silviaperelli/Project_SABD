@@ -191,7 +191,7 @@ def export_performance_to_redis(spark, r):
     print("\nEsportazione dati di performance su Redis...")
     total_rows_exported = 0
 
-    query_data_path = os.path.join(HDFS_BASE_PATH, "performance/**/*.csv")
+    query_data_path = os.path.join(HDFS_BASE_PATH, "performance/*/*/*/*.csv")
 
     try:
         performance_df = spark.read.csv(query_data_path, header=True, inferSchema=True)
@@ -247,6 +247,7 @@ if __name__ == "__main__":
     export_q2_to_redis(spark, redis_client)
     export_q3_to_redis(spark, redis_client)
     export_q4_silhouette_to_redis(spark, redis_client)
+    export_q4_elbow_to_redis(spark, redis_client)
     export_performance_to_redis(spark, redis_client)
 
     print("Esportazione a Redis completata.")

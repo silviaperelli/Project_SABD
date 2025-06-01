@@ -17,7 +17,7 @@ except ImportError as e:
     print(f"sys.path attuale: {sys.path}")
 
 
-N_RUN = 11
+N_RUN = 2
 
 # Query Q3: Aggregare i dati sulle 24 ore
 # Aggregare i dati di ciascun paese sulle 24 ore della giornata, calcolando il valor medio di “Carbon intensity gCO2eq/kWh (direct)”
@@ -99,7 +99,7 @@ def query3_df(num_executor):
         .appName("ProjectSABD_Query3") \
         .config("spark.executor.memory", "1g") \
         .config("spark.executor.cores", "1") \
-        .config("spark.cores.max", "2") \
+        .config("spark.cores.max", num_executor) \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -115,9 +115,6 @@ def query3_df(num_executor):
     final_output_df_q3 = None  # Per salvare il risultato dell'ultima esecuzione
     final_hourly_df = None # Per salvare il dataframe aggregato sulle 24 ore
 
-    num_executors_active = spark.conf.get("spark.cores.max")
-    print(f"Numero di executors {num_executors_active}")
-
     print(f"\nEsecuzione della Query Q3 per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Q3 - Run {i + 1}/{N_RUN}")
@@ -130,7 +127,7 @@ def query3_df(num_executor):
             final_hourly_df = hourly_df
 
     avg_time = performance.print_performance(execution_times, N_RUN, "Q3")
-    performance.log_performance_to_csv(spark, "Q3", "dataframe", avg_time, num_executors_active)
+    performance.log_performance_to_csv(spark, "Q3", "dataframe", avg_time, num_executor)
 
     if final_output_df_q3 and final_hourly_df:
         print("\nRisultati aggregati finali per Q3:")

@@ -46,7 +46,7 @@ def test_query3():
 
 def test_query4():
     print("\n--------Query 4--------")
-    num_executor = ["1","2","3","4"]
+    num_executor = ["2"]
     for i in num_executor:
         query4_silhouette(i)
         query4_elbow(i)
