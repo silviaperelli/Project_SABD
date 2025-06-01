@@ -1,10 +1,8 @@
-import statistics
 import time
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.clustering import KMeans
-from pyspark.ml.evaluation import ClusteringEvaluator # Per Silhouette Score
 import os
 
 import sys
@@ -21,7 +19,7 @@ except ImportError as e:
     print(f"sys.path attuale: {sys.path}")
 
 
-N_RUN = 10
+N_RUN = 2
 
 # Lista dei 30 paesi
 SELECTED_COUNTRIES = [
@@ -75,59 +73,6 @@ def read_df(spark_session, paths_to_read, target_year=2024):
 
     return df_features
 
-def silhouette_k(spark_session, paths_to_read):
-    start_time_tuning = time.time()
-
-    df_features = read_df(spark_session, paths_to_read)
-
-    df_features.cache()  # Cache perché lo useremo per trovare K e per il modello finale
-
-    # Determinazione del K Ottimale (usando Silhouette Score)
-    print("\nDeterminazione del K ottimale usando Silhouette Score...")
-    silhouette_scores = []
-    schema_silhouette = "k INTEGER, silhouette_score DOUBLE"
-    # Il numero massimo di cluster non può superare il numero di campioni (paesi)
-    max_k_to_test = min(15, df_features.count())  # Testiamo fino a 15 cluster o num_paesi
-    k_values = range(2, max_k_to_test + 1)
-
-    for k_test in k_values:
-        try:
-            kmeans_test = KMeans().setK(k_test).setSeed(1).setFeaturesCol("features").setPredictionCol("prediction_test")
-            model_test = kmeans_test.fit(df_features)
-            predictions_test = model_test.transform(df_features)
-            evaluator = ClusteringEvaluator().setPredictionCol("prediction_test").setFeaturesCol("features").setMetricName("silhouette").setDistanceMeasure("squaredEuclidean")
-            silhouette = evaluator.evaluate(predictions_test)
-            silhouette_scores.append({"k": k_test, "silhouette_score": silhouette})
-        except Exception as e_k:
-            print(f"  Errore durante il test per K={k_test}: {e_k}")
-            silhouette_scores.append({"k": k_test, "silhouette_score": -1})  # Valore indicativo di errore
-
-    if not silhouette_scores:
-        print("ERRORE: Nessun punteggio Silhouette calcolato. Impostazione K ottimale a 2 (default).")
-        optimal_k = 2
-        silhouette_results_df = spark_session.createDataFrame([], schema_silhouette)
-    else:
-        # Scelta del K con il Silhouette Score più alto
-        silhouette_results_df = spark_session.createDataFrame(silhouette_scores, schema_silhouette)
-        valid_silhouette_df = silhouette_results_df.where(F.col("silhouette_score") >= -1.0)
-        if not valid_silhouette_df.rdd.isEmpty():
-            best_k_row = valid_silhouette_df.orderBy(F.col("silhouette_score").desc()).first()
-            if best_k_row:
-                optimal_k = best_k_row["k"]
-            else:  # Non dovrebbe accadere se valid_silhouette_results_df non è vuoto
-                print("ERRORE: Impossibile determinare K ottimale. Impostazione K ottimale a 2 (default).")
-                optimal_k = 2
-        else:
-            print("ERRORE: Tutti i tentativi di calcolo Silhouette sono falliti. Impostazione K ottimale a 2 (default).")
-            optimal_k = 2  # Fallback se tutti i K falliscono
-
-        print(f"K ottimale scelto: {optimal_k} (basato su Silhouette Score)")
-
-    df_features.unpersist()  # Rilascia la cache
-
-    end_time_tuning = time.time()
-
-    return optimal_k, silhouette_results_df, end_time_tuning - start_time_tuning
 
 def run_query_clustering(spark_session, paths_to_read, k):
     start_time = time.time()
@@ -157,14 +102,105 @@ def run_query_clustering(spark_session, paths_to_read, k):
     return output_df, end_time - start_time
 
 
-def query4_df(num_executor):
+def elbow_method(spark_session, paths_to_read):
+    start_time_tuning = time.time()
+
+    df_features = read_df(spark_session, paths_to_read)
+
+    num_samples = df_features.count()
+
+    if num_samples < 2:
+        print(f"ERRORE: Numero di campioni ({num_samples}) insufficiente per il tuning K. Ritorno K=2 di default.")
+        schema_wcss = "k INTEGER, wcss DOUBLE"
+        return 2, spark_session.createDataFrame([], schema_wcss), time.time() - start_time_tuning
+
+    df_features.cache()
+
+    print("\nDeterminazione del K ottimale usando il metodo del Gomito (WCSS)...")
+    wcss_scores = []
+    schema_wcss = "k INTEGER, wcss DOUBLE"
+
+    # Il numero massimo di cluster non può superare il numero di campioni
+    # Testiamo da K=2 fino a min(15, num_samples)
+    max_k_to_test = min(15, num_samples)
+    k_values_range = range(2, max_k_to_test + 1)
+
+    for k_test in k_values_range:
+        try:
+            kmeans_test = KMeans().setK(k_test).setSeed(1).setFeaturesCol("features").setPredictionCol("prediction_test")
+            model_test = kmeans_test.fit(df_features)
+            # WCSS (Within Cluster Sum of Squares) è accessibile come trainingCost
+            wcss = model_test.summary.trainingCost
+            wcss_scores.append({"k": k_test, "wcss": float(wcss)})
+            print(f"  K={k_test}, WCSS={wcss:.4f}")
+        except Exception as e:
+            print(f"  Errore durante il test per K={k_test}: {e}")
+            wcss_scores.append({"k": k_test, "wcss": float('inf')})
+
+    df_features.unpersist()
+    tuning_duration = time.time() - start_time_tuning
+
+    if not wcss_scores:
+        print("ERRORE: Nessun punteggio WCSS calcolato. Impostazione K ottimale a 2 (default).")
+        return 2, spark_session.createDataFrame([], schema_wcss), tuning_duration
+
+    wcss_results_df = spark_session.createDataFrame(wcss_scores, schema_wcss).orderBy("k")
+
+    collected_wcss = wcss_results_df.filter(F.col("wcss") != float('inf')).collect()
+
+    optimal_k = 2
+
+    if len(collected_wcss) < 2:
+        print("ERRORE: Non abbastanza punti WCSS validi per la selezione del gomito.")
+        if collected_wcss:
+            optimal_k = collected_wcss[0]["k"]
+            print(f"  Utilizzo il primo K valido testato: {optimal_k}")
+        else:
+            print(f"  Impostazione K ottimale a {optimal_k} (default).")
+    elif len(collected_wcss) == 2:  # Se ci sono solo due punti, scegliamo il K maggiore tra i due
+        optimal_k = collected_wcss[1]["k"]
+        print(f"Solo due valori di K testati validamente. Scelgo il K più alto: {optimal_k}")
+    else:
+        # Metodo della distanza dal segmento che unisce il primo e l'ultimo punto
+        k_coords = [float(row["k"]) for row in collected_wcss]
+        wcss_coords = [float(row["wcss"]) for row in collected_wcss]
+
+        p1 = (k_coords[0], wcss_coords[0])  # Primo punto (k_min, wcss_at_k_min)
+        pn = (k_coords[-1], wcss_coords[-1])  # Ultimo punto (k_max, wcss_at_k_max)
+
+        distances = []
+        for i in range(len(k_coords)):
+            pk = (k_coords[i], wcss_coords[i])
+            # Distanza del punto pk dalla linea definita da p1 e pn
+            # Formula: |(y_n - y_1)*x_k - (x_n - x_1)*y_k + x_n*y_1 - y_n*x_1| / sqrt((y_n - y_1)^2 + (x_n - x_1)^2)
+            numerator = abs((pn[1] - p1[1]) * pk[0] - (pn[0] - p1[0]) * pk[1] + pn[0] * p1[1] - pn[1] * p1[0])
+            denominator = ((pn[1] - p1[1]) ** 2 + (pn[0] - p1[0]) ** 2) ** 0.5
+
+            if denominator == 0:  # p1 e pn coincidono
+                distances.append(0.0)
+            else:
+                distances.append(numerator / denominator)
+
+        if distances:
+            # L'indice del K ottimale è quello che massimizza la distanza
+            optimal_k_index = distances.index(max(distances))
+            optimal_k = int(k_coords[optimal_k_index])
+        else:
+            print("ERRORE: Calcolo delle distanze per il gomito fallito. Uso K di fallback.")
+            optimal_k = int(k_coords[len(k_coords) // 2]) if k_coords else 2
+
+    print(f"K ottimale scelto (metodo gomito): {optimal_k}")
+    return optimal_k, wcss_results_df, tuning_duration
+
+
+def query4_elbow(num_executor):
     start_time_script = time.time()
 
     spark = SparkSession.builder \
         .appName("ProjectSABD_Query_Clustering") \
         .config("spark.executor.memory", "1g") \
         .config("spark.executor.cores", "1") \
-        .config("spark.cores.max", "1") \
+        .config("spark.cores.max", num_executor) \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -174,14 +210,9 @@ def query4_df(num_executor):
 
     execution_times_clustering = []
     final_output_clustering_df = None
-    silhouette_df = None
-    exec_time_tuning = 0
-
-    num_executors_active = spark.conf.get("spark.cores.max")
-    print(f"Numero di executors {num_executors_active}")
 
     print(f"\nEsecuzione Tuning per Clustering...")
-    optimal_k, silhouette_df, exec_time_tuning = silhouette_k(spark, paths_to_read)
+    optimal_k, elbow_df, exec_time_tuning = elbow_method(spark, paths_to_read)
 
     print(f"\nEsecuzione della Query Clustering per {N_RUN} volte...")
     for i in range(N_RUN):
@@ -197,24 +228,12 @@ def query4_df(num_executor):
             break
 
     avg_time = performance.print_performance(execution_times_clustering, N_RUN, "Clustering")
-    performance.log_performance_to_csv(spark, "Q4", "dataframe", avg_time, num_executors_active)
-
-    # Statistiche dei tempi
-    if execution_times_clustering:
-        avg_time_clustering = statistics.mean(execution_times_clustering)
-        print(f"\n--- Statistiche Tempi Esecuzione Query Clustering  ---")
-        print(f"Tempo di tuning: {exec_time_tuning:.4f} secondi")
-        print(f"Tempi individuali: {[round(t, 4) for t in execution_times_clustering]}")
-        print(f"Tempo medio di esecuzione in {len(execution_times_clustering)} runs: {avg_time_clustering:.4f} secondi")
-        if len(execution_times_clustering) > 1:
-            std_dev_time_clustering = statistics.stdev(execution_times_clustering)
-            print(f"Deviazione standard dei tempi: {std_dev_time_clustering:.4f} secondi")
-        print("----------------------------------------------------")
+    performance.log_performance_to_csv(spark, "Q4", "dataframe", avg_time, num_executor)
 
     # Risultati Silhouette
-    if silhouette_df is not None and not silhouette_df.rdd.isEmpty():
-        print("\nRisultati Silhouette Score per K testati:")
-        silhouette_df.show(truncate=False)
+    if elbow_df is not None and not elbow_df.rdd.isEmpty():
+        print("\nRisultati Elbow Method per K testati:")
+        elbow_df.show(truncate=False)
 
     # Output dei risultati del clustering
     if final_output_clustering_df:
@@ -223,9 +242,9 @@ def query4_df(num_executor):
             num_rows_clustering = final_output_clustering_df.count()
             if num_rows_clustering > 0:
                 final_output_clustering_df.show(n=num_rows_clustering, truncate=False)
-                csv_output_path_clustering = os.path.join(base_data_path, "Q4_results")
+                csv_output_path_clustering = os.path.join(base_data_path, "Q4_elbow_results")
                 final_output_clustering_df.coalesce(1).write.csv(csv_output_path_clustering, header=True, mode="overwrite")
-                print(f"Risultati Clustering Q salvati in CSV: {csv_output_path_clustering}")
+                print(f"Risultati Clustering salvati in CSV: {csv_output_path_clustering}")
             else:
                 print("DataFrame del clustering è vuoto.")
         except Exception as e:
