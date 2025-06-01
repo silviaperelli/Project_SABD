@@ -7,7 +7,6 @@ REDIS_HOST = "redis"  # Nome del servizio nel docker-compose
 REDIS_PORT = 6379
 HDFS_BASE_PATH = "hdfs://namenode:8020/spark_data/spark"
 
-
 # crea e restituisce un client redis
 def get_redis_client():
     return redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
@@ -117,27 +116,76 @@ def export_q3_to_redis(spark, r):
         print(f"Errore durante l'esportazione delle medie orarie Q3: {e}")
 
 
-def export_q4_to_redis(spark, r):
-    print("\nEsportazione Risultati Clustering su Redis...")
+def export_q4_silhouette_to_redis(spark, r):
+    print("\nEsportazione Risultati Clustering con Silhouette Score su Redis...")
     try:
-        clustering_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q4_results"), header=True, inferSchema=True)
+        clustering_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q4_silhouette_results"), header=True, inferSchema=True)
+        silhouette_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "silhouette_values"), header=True, inferSchema=True)
 
         collected_clustering = clustering_df.collect()
-        pipe = r.pipeline()
+        collected_silhouette = silhouette_df.collect()
+        pipe_cluster = r.pipeline()
+        pipe_tuning = r.pipeline()
 
-        # Struttura 1: clustering:<country_code> -> cluster_id
+        # Struttura: clustering:silhouette:<country_code> -> cluster_id
         for row in collected_clustering:
             country = row['country_code']
-            key = f"clustering:{country}"
+            key = f"clustering:silhouette:{country}"
             data_to_store = row.asDict()
             value = json.dumps(data_to_store)
-            pipe.set(key, value)
+            pipe_cluster.set(key, value)
 
-        pipe.execute()
+        pipe_cluster.execute()
+
+        # Struttura: silhouette:<k> -> score
+        for row in collected_silhouette:
+            k = row['k']
+            key = f"silhouette:{k}"
+            data_to_store = row.asDict()
+            value = json.dumps(data_to_store)
+            pipe_tuning.set(key, value)
+
+        pipe_tuning.execute()
+
         print(f"Clustering: {len(collected_clustering)} paesi esportati.")
     except Exception as e:
         print(f"Errore durante l'esportazione dei risultati del Clustering: {e}")
 
+
+def export_q4_elbow_to_redis(spark, r):
+    print("\nEsportazione Risultati Clustering con Elbow Method su Redis...")
+    try:
+        clustering_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q4_elbow_results"), header=True, inferSchema=True)
+        elbow_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "elbow_values"), header=True, inferSchema=True)
+
+        collected_clustering = clustering_df.collect()
+        collected_elbow = elbow_df.collect()
+        pipe_cluster = r.pipeline()
+        pipe_tuning = r.pipeline()
+
+        # Struttura: clustering:elbow:<country_code> -> cluster_id
+        for row in collected_clustering:
+            country = row['country_code']
+            key = f"clustering:elbow:{country}"
+            data_to_store = row.asDict()
+            value = json.dumps(data_to_store)
+            pipe_cluster.set(key, value)
+
+        pipe_cluster.execute()
+
+        # Struttura: elbow:<k> -> score
+        for row in collected_elbow:
+            k = row['k']
+            key = f"elbow:{k}"
+            data_to_store = row.asDict()
+            value = json.dumps(data_to_store)
+            pipe_tuning.set(key, value)
+
+        pipe_tuning.execute()
+
+        print(f"Clustering: {len(collected_clustering)} paesi esportati.")
+    except Exception as e:
+        print(f"Errore durante l'esportazione dei risultati del Clustering: {e}")
 
 def export_performance_to_redis(spark, r):
     print("\nEsportazione dati di performance su Redis...")
@@ -198,7 +246,7 @@ if __name__ == "__main__":
     export_q1_to_redis(spark, redis_client)
     export_q2_to_redis(spark, redis_client)
     export_q3_to_redis(spark, redis_client)
-    export_q4_to_redis(spark, redis_client)
+    export_q4_silhouette_to_redis(spark, redis_client)
     export_performance_to_redis(spark, redis_client)
 
     print("Esportazione a Redis completata.")

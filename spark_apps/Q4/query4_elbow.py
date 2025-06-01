@@ -133,8 +133,8 @@ def elbow_method(spark_session, paths_to_read):
             wcss = model_test.summary.trainingCost
             wcss_scores.append({"k": k_test, "wcss": float(wcss)})
             print(f"  K={k_test}, WCSS={wcss:.4f}")
-        except Exception as e:
-            print(f"  Errore durante il test per K={k_test}: {e}")
+        except Exception as e_k:
+            print(f"  Errore durante il test per K={k_test}: {e_k}")
             wcss_scores.append({"k": k_test, "wcss": float('inf')})
 
     df_features.unpersist()
@@ -230,15 +230,20 @@ def query4_elbow(num_executor):
     avg_time = performance.print_performance(execution_times_clustering, N_RUN, "Clustering")
     performance.log_performance_to_csv(spark, "Q4", "dataframe", avg_time, num_executor)
 
-    # Risultati Silhouette
-    if elbow_df is not None and not elbow_df.rdd.isEmpty():
-        print("\nRisultati Elbow Method per K testati:")
-        elbow_df.show(truncate=False)
-
     # Output dei risultati del clustering
-    if final_output_clustering_df:
-        print("\nRisultati finali del Clustering (paese, carbon_intensity_2024, cluster):")
+    if final_output_clustering_df and elbow_df:
         try:
+            print("\nRisultati Elbow Method per K testati:")
+            num_k = elbow_df.count()
+            if num_k > 0:
+                elbow_df.show(n=num_k, truncate=False)
+                csv_output_path_elbow = os.path.join(base_data_path, "elbow_values")
+                elbow_df.coalesce(1).write.csv(csv_output_path_elbow, header=True, mode="overwrite")
+                print(f"Risultati Elbow Method salvati in CSV: {csv_output_path_elbow}")
+            else:
+                print("DataFrame Elbow Method è vuoto.")
+
+            print("\nRisultati finali del Clustering (paese, carbon_intensity_2024, cluster):")
             num_rows_clustering = final_output_clustering_df.count()
             if num_rows_clustering > 0:
                 final_output_clustering_df.show(n=num_rows_clustering, truncate=False)
@@ -247,6 +252,7 @@ def query4_elbow(num_executor):
                 print(f"Risultati Clustering salvati in CSV: {csv_output_path_clustering}")
             else:
                 print("DataFrame del clustering è vuoto.")
+
         except Exception as e:
             print(f"Errore durante la visualizzazione o il salvataggio dei risultati del clustering: {e}")
 

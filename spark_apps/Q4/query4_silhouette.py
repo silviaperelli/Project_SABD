@@ -97,6 +97,7 @@ def silhouette_score(spark_session, paths_to_read):
             evaluator = ClusteringEvaluator().setPredictionCol("prediction_test").setFeaturesCol("features").setMetricName("silhouette").setDistanceMeasure("squaredEuclidean")
             silhouette = evaluator.evaluate(predictions_test)
             silhouette_scores.append({"k": k_test, "silhouette_score": silhouette})
+            print(f"  K={k_test}, silhouette_score={silhouette:.4f}")
         except Exception as e_k:
             print(f"  Errore durante il test per K={k_test}: {e_k}")
             silhouette_scores.append({"k": k_test, "silhouette_score": -1})  # Valore indicativo di errore
@@ -193,15 +194,20 @@ def query4_silhouette(num_executor):
     avg_time = performance.print_performance(execution_times_clustering, N_RUN, "Clustering")
     performance.log_performance_to_csv(spark, "Q4", "dataframe", avg_time, num_executor)
 
-    # Risultati Silhouette
-    if silhouette_df is not None and not silhouette_df.rdd.isEmpty():
-        print("\nRisultati Silhouette Score per K testati:")
-        silhouette_df.show(truncate=False)
-
     # Output dei risultati del clustering
     if final_output_clustering_df:
-        print("\nRisultati finali del Clustering (paese, carbon_intensity_2024, cluster):")
         try:
+            print("\nRisultati Silhouette Score per K testati:")
+            num_k = silhouette_df.count()
+            if num_k > 0:
+                silhouette_df.show(n=num_k, truncate=False)
+                csv_output_path_silhouette = os.path.join(base_data_path, "silhouette_values")
+                silhouette_df.coalesce(1).write.csv(csv_output_path_silhouette, header=True, mode="overwrite")
+                print(f"Risultati Silhouette Score salvati in CSV: {csv_output_path_silhouette}")
+            else:
+                print("DataFrame Silhouette Score è vuoto.")
+
+            print("\nRisultati finali del Clustering (paese, carbon_intensity_2024, cluster):")
             num_rows_clustering = final_output_clustering_df.count()
             if num_rows_clustering > 0:
                 final_output_clustering_df.show(n=num_rows_clustering, truncate=False)
