@@ -19,7 +19,7 @@ except ImportError as e:
     print(f"sys.path attuale: {sys.path}")
 
 
-N_RUN = 2
+N_RUN = 10
 
 # Lista dei 30 paesi
 SELECTED_COUNTRIES = [
@@ -232,7 +232,7 @@ def query4_elbow(num_executor):
             break
 
     avg_time = performance.print_performance(execution_times_clustering, N_RUN, "Clustering")
-    performance.log_performance_to_csv(spark, "Q4", "dataframe", avg_time, num_executor)
+    performance.log_performance_to_csv(spark, "Q4", "elbow", avg_time, num_executor)
 
     # Output dei risultati del clustering
     if final_output_clustering_df and elbow_df:

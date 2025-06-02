@@ -17,7 +17,7 @@ except ImportError as e:
     print(f"sys.path attuale: {sys.path}")
 
 
-N_RUN = 2
+N_RUN = 10
 
 # Query Q3: Aggregare i dati sulle 24 ore
 # Aggregare i dati di ciascun paese sulle 24 ore della giornata, calcolando il valor medio di “Carbon intensity gCO2eq/kWh (direct)”

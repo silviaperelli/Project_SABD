@@ -15,7 +15,7 @@ except ImportError as e:
     print(f"sys.path attuale: {sys.path}")
 
 
-N_RUN = 2
+N_RUN = 10
 
 # Query Q1: Aggregare i dati su base annua
 # Calcolare media, min, max di "Carbon intensity" e "Carbon-free energy percentage"

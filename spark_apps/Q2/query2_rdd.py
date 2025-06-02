@@ -18,7 +18,7 @@ except ImportError as e:
     print(f"sys.path attuale: {sys.path}")
 
 
-N_RUN = 2
+N_RUN = 10
 
 FINAL_Q2_SCHEMA = StructType([
     StructField("date", StringType(), True),

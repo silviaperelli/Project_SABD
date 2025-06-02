@@ -17,7 +17,7 @@ except ImportError as e:
     print(f"sys.path attuale: {sys.path}")
 
 
-N_RUN = 2
+N_RUN = 10
 
 def format_for_output(df_input):
     return df_input.select(
