@@ -178,6 +178,10 @@ def query4_silhouette(num_executor):
     print(f"\nEsecuzione Tuning per Clustering...")
     optimal_k, silhouette_df, exec_time_tuning = silhouette_score(spark, paths_to_read)
 
+    print(f"\n--- Statistiche Tempi di Tuning con Silhouette Score ---")
+    print(f"Tempo di esecuzione: {exec_time_tuning:.4f} secondi")
+    print("----------------------------------------------------")
+
     print(f"\nEsecuzione della Query Clustering per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Clustering - Run {i + 1}/{N_RUN}")

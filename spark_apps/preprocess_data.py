@@ -1,4 +1,3 @@
-# ./spark_apps/preprocess_data.py
 import time
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, year, month, dayofmonth, hour, to_timestamp, lit, when, upper, avg
