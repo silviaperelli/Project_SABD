@@ -51,7 +51,7 @@ def read_df(spark_session, paths_to_read, target_year=2024):
     df_annual_avg = df_all_countries.where(F.col("year") == target_year) \
         .groupBy("country_code") \
         .agg(F.avg("carbon_intensity").alias("avg_carbon_intensity")) \
-        .filter(F.col("avg_carbon_intensity").isNotNull())  # Rimuovi paesi senza dati per il 2024
+        .filter(F.col("avg_carbon_intensity").isNotNull())
 
     if df_annual_avg.rdd.isEmpty():
         print(f"ERRORE: Nessun dato di carbon intensity aggregato trovato per l'anno {target_year}.")
@@ -62,7 +62,7 @@ def read_df(spark_session, paths_to_read, target_year=2024):
     assembler = VectorAssembler(
         inputCols=["avg_carbon_intensity"],
         outputCol="features",
-        handleInvalid="skip"  # Salta righe con valori nulli nella feature
+        handleInvalid="skip"
     )
     df_features = assembler.transform(df_annual_avg)
 
@@ -138,11 +138,10 @@ def elbow_method(spark_session, paths_to_read):
             wcss_scores.append({"k": k_test, "wcss": float('inf')})
 
     df_features.unpersist()
-    tuning_duration = time.time() - start_time_tuning
 
     if not wcss_scores:
         print("ERRORE: Nessun punteggio WCSS calcolato. Impostazione K ottimale a 2 (default).")
-        return 2, spark_session.createDataFrame([], schema_wcss), tuning_duration
+        return 2, spark_session.createDataFrame([], schema_wcss), 0.0
 
     wcss_results_df = spark_session.createDataFrame(wcss_scores, schema_wcss).orderBy("k")
 
@@ -190,6 +189,9 @@ def elbow_method(spark_session, paths_to_read):
             optimal_k = int(k_coords[len(k_coords) // 2]) if k_coords else 2
 
     print(f"K ottimale scelto (metodo gomito): {optimal_k}")
+
+    tuning_duration = time.time() - start_time_tuning
+
     return optimal_k, wcss_results_df, tuning_duration
 
 
