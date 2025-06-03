@@ -112,7 +112,6 @@ def run_query2_rdd(spark_session, path_to_read):
         .sortBy(lambda r: r.avg_cfe, ascending=True) \
         .take(5)
     cfe_asc_output_rows = [Row(date=r.date, carbon_intensity=r.avg_carbon_intensity, cfe=r.avg_cfe) for r in cfe_asc_list]
-    monthly_aggregated_rdd.unpersist()  # Rimuovi dalla cache
 
     # Unione di tutte le liste di Row
     all_output_rows = ci_desc_output_rows + ci_asc_output_rows + cfe_desc_output_rows + cfe_asc_output_rows
@@ -123,6 +122,8 @@ def run_query2_rdd(spark_session, path_to_read):
         final_df_q2_rdd = spark_session.createDataFrame([], schema=FINAL_Q2_SCHEMA)
     else:
         final_df_q2_rdd = spark_session.createDataFrame(all_output_rows, schema=FINAL_Q2_SCHEMA)
+
+    monthly_aggregated_rdd.unpersist()  # Rimuovi dalla cache
 
     final_df_q2_rdd.write.format("noop").mode("overwrite").save()
 
