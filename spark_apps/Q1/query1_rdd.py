@@ -27,7 +27,7 @@ def run_query1_rdd(spark_session, paths_to_read):
 
     print(f"Lettura dati dalle partizioni specifiche in HDFS: {paths_to_read}")
     try:
-        # Leggi i Parquet e trasformali in RDD
+        # Lettura dei dati Parquet specificando una lista di path e trasformazione in RDD
         df = spark_session.read.parquet(*paths_to_read)
         if df.rdd.isEmpty():
             print(f"ERRORE: Nessun dato trovato nelle partizioni specificate: {paths_to_read}")
@@ -36,7 +36,7 @@ def run_query1_rdd(spark_session, paths_to_read):
 
         rdd = df.rdd
 
-        # Mappa i dati per chiave (year, country_code) e raccogli i valori numerici
+        # Mapping dei dati per chiave (year, country_code)
         mapped_rdd = rdd.map(lambda row: (
             (row['year'], row['country_code']),
             (row['carbon_intensity'], row['carbon_intensity'], row['carbon_intensity'],  # sum, min, max
@@ -54,7 +54,7 @@ def run_query1_rdd(spark_session, paths_to_read):
 
         reduced_rdd = mapped_rdd.reduceByKey(reduce_func)
 
-        # Calcola le medie e costruisci una lista di Row
+        # Calcolo delle medie e costruzione di una lista di Row
         result_rows = reduced_rdd.map(lambda x: Row(
             date=x[0][0],
             country_code=x[0][1],
@@ -66,11 +66,11 @@ def run_query1_rdd(spark_session, paths_to_read):
             cfe_max=x[1][5]
         ))
 
-        # Converte in DataFrame per uniformità e ordinamento
+        # Conversione in DataFrame per uniformità e ordinamento
         output_df_q1 = spark_session.createDataFrame(result_rows)
         output_df_q1 = output_df_q1.orderBy("country_code", "date")
 
-        # Scrittura fittizia in formato noop
+        # Azione per forzare l'esecuzione e misurare il tempo
         output_df_q1.write.format("noop").mode("overwrite").save()
 
     except Exception as e:
@@ -93,7 +93,7 @@ def query1_rdd(num_executor):
         .config("spark.cores.max", num_executor) \
         .getOrCreate()
 
-    sc = spark.sparkContext  # Ottieni SparkContext
+    sc = spark.sparkContext
     sc.setLogLevel("WARN")
 
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
@@ -109,7 +109,7 @@ def query1_rdd(num_executor):
     for i in range(N_RUN):
         print(f"\nEsecuzione Q1 RDD - Run {i + 1}/{N_RUN}")
         output_df_q1_rdd, exec_time_rdd = run_query1_rdd(spark, paths_to_read)
-        execution_times_rdd.append(exec_time_rdd)  # Aggiunge il tempo di esecuzione alla lista
+        execution_times_rdd.append(exec_time_rdd)
         print(f"Run {i + 1} completato in {exec_time_rdd:.4f} secondi.")
 
     avg_time_rdd = performance.print_performance(execution_times_rdd, N_RUN, "Q1 Spark RDD")

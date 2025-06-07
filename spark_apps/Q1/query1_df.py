@@ -59,6 +59,7 @@ def run_query1(spark_session, paths_to_read):
         "cfe_mean", "cfe_min", "cfe_max"
     )
 
+    # Azione per forzare l'esecuzione e misurare il tempo
     output_df_q1.write.format("noop").mode("overwrite").save()
 
     end_time = time.time()
@@ -76,7 +77,7 @@ def query1_df(num_executor):
         .config("spark.cores.max", num_executor) \
         .getOrCreate()
 
-    sc = spark.sparkContext  # Ottieni SparkContext
+    sc = spark.sparkContext
     sc.setLogLevel("WARN")
 
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
@@ -88,14 +89,14 @@ def query1_df(num_executor):
     execution_times = []  # Lista per memorizzare i tempi di ogni esecuzione della query
     final_output_df_q1 = None  # Per salvare il risultato dell'ultima esecuzione
 
-    print(f"\nEsecuzione della Query Q1 per {N_RUN} volte...")
+    print(f"\nEsecuzione della Query Q1 con DataFrame per {N_RUN} volte...")
     for i in range(N_RUN):
-        print(f"\nEsecuzione Q1 - Run {i + 1}/{N_RUN}")
+        print(f"\nEsecuzione Q1 DataFrame - Run {i + 1}/{N_RUN}")
 
         result_df, exec_time = run_query1(spark, paths_to_read)
-        execution_times.append(exec_time)  # Aggiunge il tempo di esecuzione alla lista
+        execution_times.append(exec_time)
         print(f"Run {i + 1} completato in {exec_time:.4f} secondi.")
-        if i == N_RUN - 1:  # Se è l'ultima esecuzione, salva il DataFrame risultato
+        if i == N_RUN - 1:
             final_output_df_q1 = result_df
 
 
@@ -103,7 +104,7 @@ def query1_df(num_executor):
     performance.log_performance_to_csv(spark, "Q1", "dataframe", avg_time, num_executor)
 
     if final_output_df_q1:
-        print("\nRisultati aggregati finali per Q1:")
+        print("\nRisultati aggregati finali per Q1 con DataFrame:")
 
         final_output_df_q1.show(n=final_output_df_q1.count(), truncate=False)
 

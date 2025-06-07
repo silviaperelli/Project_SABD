@@ -52,26 +52,26 @@ def run_query2_rdd(spark_session, path_to_read):
         spark_session.stop()
         exit()
 
-
+    # Mapping dei dati per chiave (year, month)
     mapped_rdd = input_rdd.map(lambda row: (
         (row['year'], row['month']),
         (row['carbon_intensity'], row['carbon_free_percentage'], 1)
     ))
 
-    # Riduci per chiave
+    # Funzione di riduzione per aggregare i valori
     def reduce_monthly_aggregates(a, b):
         # a, b sono (sum_ci, sum_cfe, count_cfe)
         return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
 
     reduced_rdd = mapped_rdd.reduceByKey(reduce_monthly_aggregates)
 
-    # Calcola medie e formatta la data
+    # Calcolo delle medie e costruzione di una lista di Row
     def calculate_averages_and_format_date_q2(item):
         key, value = item
         year, month = key
         sum_ci, sum_cfe, count = value
 
-        # Formatta la data come YYYY_MM
+        # Formattazione della data come YYYY_MM
         date_str = f"{year}_{str(month).zfill(2)}"
 
         avg_ci = sum_ci / count if count > 0 else None
@@ -86,9 +86,8 @@ def run_query2_rdd(spark_session, path_to_read):
         )
 
     monthly_aggregated_rdd = reduced_rdd.map(calculate_averages_and_format_date_q2)
-    monthly_aggregated_rdd.cache()  # Cache perché verrà usato più volte
+    monthly_aggregated_rdd.cache()  # Memorizzazione in cache
 
-    # --- Operazioni di Top/Bottom 5 ---
     # 1. Carbon intensity decrescente (peggiori)
     ci_desc_list = monthly_aggregated_rdd.filter(lambda r: r.avg_carbon_intensity is not None) \
         .sortBy(lambda r: r.avg_carbon_intensity, ascending=False) \
@@ -117,14 +116,14 @@ def run_query2_rdd(spark_session, path_to_read):
     all_output_rows = ci_desc_output_rows + ci_asc_output_rows + cfe_desc_output_rows + cfe_asc_output_rows
 
     # Creazione del DataFrame finale
-    # Se all_output_rows è vuota, crea un DataFrame vuoto con lo schema
     if not all_output_rows:
         final_df_q2_rdd = spark_session.createDataFrame([], schema=FINAL_Q2_SCHEMA)
     else:
         final_df_q2_rdd = spark_session.createDataFrame(all_output_rows, schema=FINAL_Q2_SCHEMA)
 
-    monthly_aggregated_rdd.unpersist()  # Rimuovi dalla cache
+    monthly_aggregated_rdd.unpersist()  # Rimozione dalla cache
 
+    # Azione per forzare l'esecuzione e misurare il tempo
     final_df_q2_rdd.write.format("noop").mode("overwrite").save()
 
     end_time = time.time()
@@ -144,10 +143,7 @@ def query2_rdd(num_executor):
 
     spark.sparkContext.setLogLevel("WARN")
 
-    # Path base ai dati processati e partizionati
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
-
-    # Path specifico per i dati dell'Italia
     path_to_read = os.path.join(base_data_path, "country=Italy")
 
     execution_times_rdd = []
@@ -157,7 +153,7 @@ def query2_rdd(num_executor):
     for i in range(N_RUN):
         print(f"\nEsecuzione Q2 con RDD - Run {i + 1}/{N_RUN}")
         output_df_q2_rdd, exec_time_rdd = run_query2_rdd(spark, path_to_read)
-        execution_times_rdd.append(exec_time_rdd)  # Aggiunge il tempo di esecuzione alla lista
+        execution_times_rdd.append(exec_time_rdd)
         print(f"Run {i + 1} completato in {exec_time_rdd:.4f} secondi.")
 
     avg_time_rdd = performance.print_performance(execution_times_rdd, N_RUN, "Q2 Spark RDD")

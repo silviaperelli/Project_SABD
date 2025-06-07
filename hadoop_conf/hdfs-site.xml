@@ -6,26 +6,24 @@
 
     <property>
         <name>dfs.permissions.enabled</name>
-        <value>false</value> <!-- OK per lo sviluppo -->
+        <value>false</value>
     </property>
 
     <property>
         <name>dfs.namenode.name.dir</name>
-        <value>file:///hadoop/dfs/name</value> <!-- Path interno al container del namenode -->
+        <value>file:///hadoop/dfs/name</value>
     </property>
 
     <property>
         <name>dfs.datanode.data.dir</name>
-        <value>file:///hadoop/dfs/data</value> <!-- Path interno al container del datanode -->
+        <value>file:///hadoop/dfs/data</value>
     </property>
 
-    <!-- Opzionale ma raccomandato per chiarezza e potenziali problemi di rete -->
     <property>
         <name>dfs.namenode.http-address</name>
-        <value>namenode:9870</value> <!-- O 0.0.0.0:9870 se preferisci bindare a tutte le interfacce interne -->
+        <value>namenode:9870</value>
     </property>
 
-    <!-- Opzionale, utile in alcuni scenari di rete con Docker -->
     <property>
         <name>dfs.client.use.datanode.hostname</name>
         <value>true</value>
@@ -35,8 +33,6 @@
         <value>true</value>
     </property>
 
-    <!-- Opzionale: Abilita WebHDFS, spesso utile e abilitato di default in molte distribuzioni -->
-    <!-- L'immagine bde2020 dovrebbe già averlo abilitato, ma esplicitarlo non guasta -->
     <property>
         <name>dfs.webhdfs.enabled</name>
         <value>true</value>

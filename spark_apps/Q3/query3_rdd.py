@@ -1,7 +1,7 @@
 import time
 from pyspark.sql import SparkSession
 from pyspark.sql import Row
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 import os
 import math
 
@@ -32,6 +32,10 @@ FINAL_Q3_SCHEMA = StructType([
     StructField("max", DoubleType(), True)
 ])
 
+# Query Q3: Aggregare i dati sulle 24 ore
+# Aggregare i dati di ciascun paese sulle 24 ore della giornata, calcolando il valor medio di “Carbon intensity gCO2eq/kWh (direct)”
+# e “Carbon-free energy percentage (CFE%)”. Calcolare il minimo, 25-esimo, 50-esimo, 75-esimo percentile
+# e massimo del valor medio di “Carbon intensity gCO2eq/kWh (direct)” e “Carbon-free energy percentage (CFE%)”.
 
 def run_query3_rdd(spark_session, paths_to_read):
     start_time_func = time.time()
@@ -53,17 +57,20 @@ def run_query3_rdd(spark_session, paths_to_read):
         spark_session.stop()
         exit()
 
+    # Mapping dei dati per chiave (hour, country_code)
     mapped_hourly_rdd = input_rdd.map(lambda row: (
         (row['hour'], row['country_code']),
         (row['carbon_intensity'], row['carbon_free_percentage'], 1)
     ))
 
+    # Funzione di riduzione per aggregare i valori
     def reduce_hourly_aggregates(a, b):
         # a, b sono (sum_ci, sum_cfe, count)
         return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
 
     reduced_hourly_rdd = mapped_hourly_rdd.reduceByKey(reduce_hourly_aggregates)
 
+    # Calcolo delle medie e costruzione di una lista di Row
     def calculate_hourly_averages(item):
         key, value = item
         hour, country_code = key
@@ -75,11 +82,9 @@ def run_query3_rdd(spark_session, paths_to_read):
         return Row(country_code=country_code, hour=hour, avg_carbon_intensity=avg_ci, avg_cfe=avg_cfe)
 
     hourly_avg_rdd = reduced_hourly_rdd.map(calculate_hourly_averages)
-    hourly_avg_rdd.cache()
+    hourly_avg_rdd.cache() # Memorizzazione in cache
 
-    # Calcolo Percentili e Statistiche
-
-    # Mappa a (country_code, (avg_ci, avg_cfe)) per raggruppare
+    # Mapping (country_code, (avg_ci, avg_cfe))
     country_values_rdd = hourly_avg_rdd.map(
         lambda r: (r.country_code, (r.avg_carbon_intensity, r.avg_cfe))
     )
@@ -87,6 +92,7 @@ def run_query3_rdd(spark_session, paths_to_read):
     # Raggruppa per country_code
     grouped_by_country_rdd = country_values_rdd.groupByKey()  # (country_code, ResultIterable[(avg_ci, avg_cfe)])
 
+    # Calcolo Percentili e Statistiche
     def calculate_stats_for_country(item):
         country_code, iterable_values = item
         values_list_of_tuples = list(iterable_values)
@@ -95,7 +101,6 @@ def run_query3_rdd(spark_session, paths_to_read):
         results = []
 
         def get_interpolated_percentiles(values):
-            # Assicura che siano float e ordina
             sorted_values = sorted([float(v) for v in values])
             n = len(sorted_values)
 
@@ -148,7 +153,7 @@ def run_query3_rdd(spark_session, paths_to_read):
             ))
         return results
 
-
+    # Creazione del DataFrame finale
     final_stats_rdd = grouped_by_country_rdd.flatMap(calculate_stats_for_country)
 
     if final_stats_rdd.isEmpty():
@@ -156,9 +161,10 @@ def run_query3_rdd(spark_session, paths_to_read):
     else:
         final_stats_df_q3 = spark_session.createDataFrame(final_stats_rdd, schema=FINAL_Q3_SCHEMA)
 
-    final_stats_df_q3.write.format("noop").mode("overwrite").save()
+    hourly_avg_rdd.unpersist()  # Rimozione dalla cache
 
-    hourly_avg_rdd.unpersist()
+    # Azione per forzare l'esecuzione e misurare il tempo
+    final_stats_df_q3.write.format("noop").mode("overwrite").save()
 
     end_time_func = time.time()
     exec_time = end_time_func - start_time_func
@@ -192,7 +198,7 @@ def query3_rdd(num_executor):
     for i in range(N_RUN):
         print(f"\nEsecuzione Q3 con RDD - Run {i + 1}/{N_RUN}")
         output_df_q3_rdd, exec_time_rdd = run_query3_rdd(spark, paths_to_read)
-        execution_times_rdd.append(exec_time_rdd)  # Aggiunge il tempo di esecuzione alla lista
+        execution_times_rdd.append(exec_time_rdd)
         print(f"Run {i + 1} completato in {exec_time_rdd:.4f} secondi.")
 
     avg_time_rdd = performance.print_performance(execution_times_rdd, N_RUN, "Q3 Spark RDD")

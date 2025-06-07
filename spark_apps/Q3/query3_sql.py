@@ -42,6 +42,7 @@ def run_query3_spark_sql(spark_session, paths_to_read):
         spark_session.stop()
         exit()
 
+    # Creazione di una vista temporanea per interrogazione SQL
     df_processed.createOrReplaceTempView("q3_data_view")
 
     query_hourly_avg_sql = """
@@ -58,6 +59,7 @@ def run_query3_spark_sql(spark_session, paths_to_read):
 
     hourly_avg_df_sql = spark_session.sql(query_hourly_avg_sql)
 
+    # Creazione di una vista temporanea per interrogazione SQL
     hourly_avg_df_sql.createOrReplaceTempView("hourly_averages_q3_view")
 
     # Calcolo statistiche (min, percentili, max) usando la vista delle medie orarie
@@ -103,7 +105,7 @@ def run_query3_spark_sql(spark_session, paths_to_read):
         F.col("max_val").alias("max")
     )
 
-    # Azione per misurare il tempo sull'output finale delle statistiche
+    # Azione per forzare l'esecuzione e misurare il tempo
     final_stats_df_q3_sql.write.format("noop").mode("overwrite").save()
 
     end_time = time.time()
@@ -123,7 +125,6 @@ def query3_sql(num_executor):
 
     spark.sparkContext.setLogLevel("WARN")
 
-    # Path base ai dati processati e partizionati
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
     paths_to_read = [
         os.path.join(base_data_path, "country=Italy"),
@@ -137,7 +138,7 @@ def query3_sql(num_executor):
     for i in range(N_RUN):
         print(f"\nEsecuzione Q3 SQL - Run {i + 1}/{N_RUN}")
         output_df_q3_sql, exec_time_sql = run_query3_spark_sql(spark, paths_to_read)
-        execution_times_sql.append(exec_time_sql)  # Aggiunge il tempo di esecuzione alla lista
+        execution_times_sql.append(exec_time_sql)
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
     avg_time_sql = performance.print_performance(execution_times_sql, N_RUN, "Q3 Spark SQL")

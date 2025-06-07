@@ -24,6 +24,7 @@ N_RUN = 10
 # e “Carbon-free energy percentage (CFE%)”. Calcolare il minimo, 25-esimo, 50-esimo, 75-esimo percentile
 # e massimo del valor medio di “Carbon intensity gCO2eq/kWh (direct)” e “Carbon-free energy percentage (CFE%)”.
 
+# Funzione per il calcolo del percentile e dei valori minimi e massimi
 def calculate_percentiles_and_stats(df_input, value_col_name, metric_name_output):
 
     percentiles_df = df_input.groupBy("country_code") \
@@ -64,15 +65,14 @@ def run_query3(spark_session, paths_to_read):
         spark_session.stop()
         exit()
 
-    # Aggregazione dati per paese e ora della giornata, calcolando la media
+    # Aggregazione dati per paese e ora della giornata
     hourly_avg_df = df_processed.groupBy("country_code", "hour") \
         .agg(
             F.avg("carbon_intensity").alias("avg_carbon_intensity"),
             F.avg("carbon_free_percentage").alias("avg_cfe")
         )
 
-    # Cache di questo DataFrame intermedio perché verrà usato per i percentili E per i dati per i grafici
-    hourly_avg_df.cache()
+    hourly_avg_df.cache() # Memorizzazione in cache
 
     # Calcolo min, 25, 50, 75 percentile e max per "carbon_intensity"
     carbon_intensity_stats_df = calculate_percentiles_and_stats(hourly_avg_df,"avg_carbon_intensity","carbon-intensity")
@@ -80,9 +80,10 @@ def run_query3(spark_session, paths_to_read):
     # Calcolo min, 25, 50, 75 percentile e max per "carbon_free_percentage"
     cfe_stats_df = calculate_percentiles_and_stats(hourly_avg_df,"avg_cfe","cfe")
 
-    # Unione dei risultati
+    # Unione dei risultati in unico DataFrame
     final_stats_df_q3 = carbon_intensity_stats_df.unionByName(cfe_stats_df)
 
+    # Azione per forzare l'esecuzione e misurare il tempo
     final_stats_df_q3.write.format("noop").mode("overwrite").save()
 
     # Rimozione dalla cache
@@ -104,7 +105,6 @@ def query3_df(num_executor):
 
     spark.sparkContext.setLogLevel("WARN")
 
-    # Path base ai dati processati e partizionati
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
     paths_to_read = [
         os.path.join(base_data_path, "country=Italy"),
@@ -115,14 +115,14 @@ def query3_df(num_executor):
     final_output_df_q3 = None  # Per salvare il risultato dell'ultima esecuzione
     final_hourly_df = None # Per salvare il dataframe aggregato sulle 24 ore
 
-    print(f"\nEsecuzione della Query Q3 per {N_RUN} volte...")
+    print(f"\nEsecuzione della Query Q3 con DataFrame per {N_RUN} volte...")
     for i in range(N_RUN):
-        print(f"\nEsecuzione Q3 - Run {i + 1}/{N_RUN}")
+        print(f"\nEsecuzione Q3 DataFrame - Run {i + 1}/{N_RUN}")
 
         result_df, hourly_df, exec_time = run_query3(spark, paths_to_read)
-        execution_times.append(exec_time)  # Aggiunge il tempo di esecuzione alla lista
+        execution_times.append(exec_time)
         print(f"Run {i + 1} completato in {exec_time:.4f} secondi.")
-        if i == N_RUN - 1:  # Se è l'ultima esecuzione, salva il DataFrame risultato
+        if i == N_RUN - 1:
             final_output_df_q3 = result_df
             final_hourly_df = hourly_df
 
@@ -130,12 +130,12 @@ def query3_df(num_executor):
     performance.log_performance_to_csv(spark, "Q3", "dataframe", avg_time, num_executor)
 
     if final_output_df_q3 and final_hourly_df:
-        print("\nRisultati aggregati finali per Q3:")
+        print("\nRisultati aggregati finali per Q3 con DataFrame:")
 
         final_output_df_q3.orderBy("country_code").show(n=final_output_df_q3.count(), truncate=False)
 
-        csv_output_path = os.path.join(base_data_path, "Q3_results")  # Path per il CSV
-        csv_graphs_path = os.path.join(base_data_path, "Q3_graphs") # Path per il CSV per i grafici
+        csv_output_path = os.path.join(base_data_path, "Q3_results")
+        csv_graphs_path = os.path.join(base_data_path, "Q3_graphs")
         # .coalesce(1) riduce il numero di partizioni a 1 per scrivere un singolo file CSV
         final_output_df_q3.coalesce(1).write.csv(csv_output_path, header=True, mode="overwrite")
         final_hourly_df.coalesce(1).write.csv(csv_graphs_path, header=True, mode="overwrite")

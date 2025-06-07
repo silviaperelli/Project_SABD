@@ -55,9 +55,9 @@ def run_query2(spark_session, path_to_read):
         F.avg("carbon_intensity").alias("avg_carbon_intensity"),
         F.avg("carbon_free_percentage").alias("avg_cfe")) \
         .withColumn("date", F.concat(F.col("year"), F.lit("_"), F.lpad(F.col("month"), 2, '0'))) \
-        .select("date", "avg_carbon_intensity", "avg_cfe", "year", "month")  # Mantenere year e month per ordinamenti
+        .select("date", "avg_carbon_intensity", "avg_cfe", "year", "month")
 
-    monthly_aggregated_it_df.cache()
+    monthly_aggregated_it_df.cache() # Memorizzazione in cache
 
     # 1. Carbon intensity decrescente (peggiori)
     ci_desc = monthly_aggregated_it_df.orderBy(F.col("avg_carbon_intensity").desc()) \
@@ -87,6 +87,7 @@ def run_query2(spark_session, path_to_read):
 
     monthly_aggregated_it_df.unpersist()  # Rimozione dalla cache
 
+    # Azione per forzare l'esecuzione e misurare il tempo
     final_df_q2.write.format("noop").mode("overwrite").save()
 
     end_time = time.time()
@@ -106,24 +107,21 @@ def query2_df(num_executor):
 
     spark.sparkContext.setLogLevel("WARN")
 
-    # Path base ai dati processati e partizionati
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
-
-    # Path specifico per i dati dell'Italia
     path_to_read = os.path.join(base_data_path, "country=Italy")
 
     execution_times = []  # Lista per memorizzare i tempi di ogni esecuzione della query
     final_output_df_q2 = None  # Per salvare il risultato dell'ultima esecuzione
     final_monthly_df = None # Per salvare il dataframe aggregato su coppia (anno, mese)
 
-    print(f"\nEsecuzione della Query Q2 per {N_RUN} volte...")
+    print(f"\nEsecuzione della Query Q2 con DataFrame per {N_RUN} volte...")
     for i in range(N_RUN):
-        print(f"\nEsecuzione Q2 - Run {i + 1}/{N_RUN}")
+        print(f"\nEsecuzione Q2 DataFrame - Run {i + 1}/{N_RUN}")
 
         result_df, monthly_df, exec_time = run_query2(spark, path_to_read)
-        execution_times.append(exec_time)  # Aggiunge il tempo di esecuzione alla lista
+        execution_times.append(exec_time)
         print(f"Run {i + 1} completato in {exec_time:.4f} secondi.")
-        if i == N_RUN - 1:  # Se è l'ultima esecuzione, salva il DataFrame risultato
+        if i == N_RUN - 1:
             final_output_df_q2 = result_df
             final_monthly_df = monthly_df
 
@@ -131,12 +129,12 @@ def query2_df(num_executor):
     performance.log_performance_to_csv(spark, "Q2", "dataframe", avg_time, num_executor)
 
     if final_output_df_q2 and final_monthly_df:
-        print("\nRisultati aggregati finali per Q2:")
+        print("\nRisultati aggregati finali per Q2 con DataFrame:")
 
         final_output_df_q2.show(n=final_output_df_q2.count(), truncate=False)
 
-        csv_output_path = os.path.join(base_data_path, "Q2_results")  # Path per il CSV
-        csv_graphs_path = os.path.join(base_data_path, "Q2_graphs") # Path per il CSV per i grafici
+        csv_output_path = os.path.join(base_data_path, "Q2_results")
+        csv_graphs_path = os.path.join(base_data_path, "Q2_graphs")
         # .coalesce(1) riduce il numero di partizioni a 1 per scrivere un singolo file CSV
         final_output_df_q2.coalesce(1).write.csv(csv_output_path, header=True, mode="overwrite")
         final_monthly_df.coalesce(1).write.csv(csv_graphs_path, header=True, mode="overwrite")

@@ -49,6 +49,7 @@ def run_query2_spark_sql(spark_session, path_to_read):
         spark_session.stop()
         exit()
 
+    # Creazione di una vista temporanea per interrogazione SQL
     df_processed.createOrReplaceTempView("q2_data_view")
 
     query_monthly_aggregates_cte = """
@@ -77,7 +78,7 @@ def run_query2_spark_sql(spark_session, path_to_read):
     """
     final_df_q2_sql = spark_session.sql(query_q2_top_sql)
 
-    # Azione per forzare l'esecuzione della query dei top 5
+    # Azione per forzare l'esecuzione e misurare il tempo
     final_df_q2_sql.write.format("noop").mode("overwrite").save()
 
     end_time = time.time()
@@ -96,21 +97,17 @@ def query2_sql(num_executor):
 
     spark.sparkContext.setLogLevel("WARN")
 
-    # Path base ai dati processati e partizionati
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
-
-    # Path specifico per i dati dell'Italia
     path_to_read = os.path.join(base_data_path, "country=Italy")
 
     execution_times_sql = []
     output_df_q2_sql = None
 
-
     print(f"\nEsecuzione della Query Q2 con Spark SQL per {N_RUN} volte...")
     for i in range(N_RUN):
         print(f"\nEsecuzione Q2 SQL - Run {i + 1}/{N_RUN}")
         output_df_q2_sql, exec_time_sql = run_query2_spark_sql(spark, path_to_read)
-        execution_times_sql.append(exec_time_sql)  # Aggiunge il tempo di esecuzione alla lista
+        execution_times_sql.append(exec_time_sql)
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
     avg_time_sql = performance.print_performance(execution_times_sql, N_RUN, "Q2 Spark SQL")

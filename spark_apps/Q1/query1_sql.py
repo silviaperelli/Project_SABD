@@ -81,7 +81,7 @@ def query1_sql(num_executor):
         .config("spark.cores.max", num_executor) \
         .getOrCreate()
 
-    sc = spark.sparkContext  # Ottieni SparkContext
+    sc = spark.sparkContext
     sc.setLogLevel("WARN")
 
     base_data_path = "hdfs://namenode:8020/spark_data/spark"
@@ -97,7 +97,7 @@ def query1_sql(num_executor):
     for i in range(N_RUN):
         print(f"\nEsecuzione Q1 SQL - Run {i + 1}/{N_RUN}")
         output_df_q1_sql, exec_time_sql = run_query1_spark_sql(spark, paths_to_read)
-        execution_times_sql.append(exec_time_sql)  # Aggiunge il tempo di esecuzione alla lista
+        execution_times_sql.append(exec_time_sql)
         print(f"Run {i + 1} completato in {exec_time_sql:.4f} secondi.")
 
     avg_time_sql = performance.print_performance(execution_times_sql, N_RUN, "Q1 Spark SQL")
