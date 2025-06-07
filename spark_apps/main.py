@@ -62,6 +62,7 @@ if __name__ == "__main__":
 
     query = sys.argv[1]
 
+    # Esecuzione query al variare del numero di executor
     if query == "1":
         test_query1()
     elif query == "2":

@@ -35,7 +35,7 @@ def read_df(spark_session, paths_to_read, target_year=2024):
     print(f"Lettura dati per clustering da {len(paths_to_read)} partizioni")
 
     try:
-        # Leggiamo tutti i dati disponibili per i paesi
+        # Lettura dei dati Parquet specificando una lista di path
         df_all_countries = spark_session.read.parquet(*paths_to_read)
 
         if df_all_countries.rdd.isEmpty():
@@ -47,7 +47,7 @@ def read_df(spark_session, paths_to_read, target_year=2024):
         print(f"Errore durante la lettura dei dati per clustering: {e}")
         raise
 
-    # Filtraggio per l'anno target e aggrega per calcolare la media annua di carbon_intensity
+    # Filtraggio per l'anno target e aggregazione annua di carbon_intensity
     df_annual_avg = df_all_countries.where(F.col("year") == target_year) \
         .groupBy("country_code") \
         .agg(F.avg("carbon_intensity").alias("avg_carbon_intensity")) \
@@ -66,7 +66,8 @@ def read_df(spark_session, paths_to_read, target_year=2024):
     )
     df_features = assembler.transform(df_annual_avg)
 
-    if df_features.count() < 2:  # K-Means necessita di almeno k punti (e k >= 2 per Silhouette)
+    # Verifica che K-Means abbia almeno 2 punti
+    if df_features.count() < 2:
         print("ERRORE: Non abbastanza dati validi dopo la preparazione delle feature per il clustering.")
         schema_output = "country_code STRING, avg_carbon_intensity_2024 DOUBLE, cluster_prediction INTEGER"
         return spark_session.createDataFrame([], schema_output), None, 0.0
@@ -95,16 +96,18 @@ def run_query_clustering(spark_session, paths_to_read, k):
         F.col("cluster_prediction")
     ).orderBy("cluster_prediction", f"avg_carbon_intensity")
 
+    # Azione per forzare l'esecuzione e misurare il tempo
     output_df.write.format("noop").mode("overwrite").save()
 
     end_time = time.time()
 
     return output_df, end_time - start_time
 
-
+# Funzione per il tuning K con Elbow Method
 def elbow_method(spark_session, paths_to_read):
     start_time_tuning = time.time()
 
+    # Lettura dati da HDFS
     df_features = read_df(spark_session, paths_to_read)
 
     num_samples = df_features.count()
@@ -114,14 +117,13 @@ def elbow_method(spark_session, paths_to_read):
         schema_wcss = "k INTEGER, wcss DOUBLE"
         return 2, spark_session.createDataFrame([], schema_wcss), time.time() - start_time_tuning
 
-    df_features.cache()
+    df_features.cache() # Memorizzazione in cache
 
     print("\nDeterminazione del K ottimale usando il metodo del Gomito (WCSS)...")
-    wcss_scores = []
+    wcss_scores = [] # Lista per memorizzare i valori di wcss per tutti i k
     schema_wcss = "k INTEGER, wcss DOUBLE"
 
-    # Il numero massimo di cluster non può superare il numero di campioni
-    # Testiamo da K=2 fino a min(15, num_samples)
+    # Intervallo di valori di k da testare da 2 al minimo tra 15 e il numero di campioni
     max_k_to_test = min(15, num_samples)
     k_values_range = range(2, max_k_to_test + 1)
 
@@ -129,7 +131,7 @@ def elbow_method(spark_session, paths_to_read):
         try:
             kmeans_test = KMeans().setK(k_test).setSeed(1).setFeaturesCol("features").setPredictionCol("prediction_test")
             model_test = kmeans_test.fit(df_features)
-            # WCSS (Within Cluster Sum of Squares) è accessibile come trainingCost
+            # Calcolo di WCSS, accessibile come trainingCost
             wcss = model_test.summary.trainingCost
             wcss_scores.append({"k": k_test, "wcss": float(wcss)})
             print(f"  K={k_test}, WCSS={wcss:.4f}")
@@ -137,7 +139,7 @@ def elbow_method(spark_session, paths_to_read):
             print(f"  Errore durante il test per K={k_test}: {e_k}")
             wcss_scores.append({"k": k_test, "wcss": float('inf')})
 
-    df_features.unpersist()
+    df_features.unpersist() # Rimozione dalla cache
 
     if not wcss_scores:
         print("ERRORE: Nessun punteggio WCSS calcolato. Impostazione K ottimale a 2 (default).")
@@ -220,9 +222,9 @@ def query4_elbow(num_executor):
     print(f"Tempo di esecuzione: {exec_time_tuning:.4f} secondi")
     print("----------------------------------------------------")
 
-    print(f"\nEsecuzione della Query Clustering per {N_RUN} volte...")
+    print(f"\nEsecuzione della Query Clustering con DataFrame per {N_RUN} volte...")
     for i in range(N_RUN):
-        print(f"\nEsecuzione Clustering - Run {i + 1}/{N_RUN}")
+        print(f"\nEsecuzione Clustering con DataFrame - Run {i + 1}/{N_RUN}")
         try:
             result_clustering_df, exec_time = run_query_clustering(spark, paths_to_read, optimal_k)
             execution_times_clustering.append(exec_time)
@@ -249,7 +251,7 @@ def query4_elbow(num_executor):
             else:
                 print("DataFrame Elbow Method è vuoto.")
 
-            print("\nRisultati finali del Clustering (paese, carbon_intensity_2024, cluster):")
+            print("\nRisultati finali del Clustering con Dataframe (paese, carbon_intensity_2024, cluster):")
             num_rows_clustering = final_output_clustering_df.count()
             if num_rows_clustering > 0:
                 final_output_clustering_df.show(n=num_rows_clustering, truncate=False)

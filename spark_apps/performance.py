@@ -3,6 +3,7 @@ import statistics
 
 PERFORMANCE_CSV_PATH = "hdfs://namenode:8020/spark_data/spark/performance/"
 
+# Funzione per stampa delle performance
 def print_performance(execution_times, run, query):
     avg_time = 0
     if execution_times:
@@ -10,12 +11,13 @@ def print_performance(execution_times, run, query):
         print(f"\n--- Statistiche Tempi Esecuzione Query {query} ({run} runs) ---")
         print(f"Tempi individuali: {[round(t, 4) for t in execution_times]}")
         print(f"Tempo medio di esecuzione: {avg_time:.4f} secondi")
-        if len(execution_times) > 1:  # La deviazione standard richiede almeno 2 campioni
+        if len(execution_times) > 1:
             std_dev_time = statistics.stdev(execution_times)
             print(f"Deviazione standard dei tempi: {std_dev_time:.4f} secondi")
         print("----------------------------------------------------")
     return avg_time
 
+# Funzione per salvataggio dei dati di performance su file CSV su HDFS
 def log_performance_to_csv(spark, query_name, query_type, avg_exec_time, num_executors):
 
     try:

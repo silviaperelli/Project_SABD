@@ -1,6 +1,6 @@
 import time
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, year, month, dayofmonth, hour, to_timestamp, lit, when, upper, avg
+from pyspark.sql.functions import col, year, month, dayofmonth, hour, to_timestamp
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -14,6 +14,7 @@ if __name__ == "__main__":
     print(f"\nLettura dati da HDFS: {base_input_path_hdfs}*/*/*.parquet")
 
     try:
+        # Lettura dei dati Parquet
         df_raw = spark.read.parquet(base_input_path_hdfs + "*/*/*.parquet")
         if df_raw.rdd.isEmpty():
             print(f"ERRORE: Nessun file Parquet trovato in {base_input_path_hdfs}*/*/*.parquet")
@@ -29,6 +30,7 @@ if __name__ == "__main__":
             "Data_estimation_method"
         ]
 
+        # Rimozione di alcune colonne
         existing_columns = df_raw.columns
         columns_to_drop_actual = [c for c in columns_to_drop if c in existing_columns]
         if len(columns_to_drop_actual) > 0:
@@ -49,6 +51,7 @@ if __name__ == "__main__":
         .withColumn("country_code", col("Zone_id")) \
         .withColumn("country", col("Country")) \
 
+    # DataFrame finale con estrazione dei campi anno, mese, giorno, ora
     df_final = df_intermediate \
         .withColumn("year", year(col("datetime"))) \
         .withColumn("month", month(col("datetime"))) \
@@ -64,7 +67,7 @@ if __name__ == "__main__":
             "month",
             "day",
             "hour"
-        ).orderBy("country", "datetime") # Ordinamento per una migliore leggibilità dell'output
+        ).orderBy("country", "datetime")
 
     print("\nSchema dati finali (aggregati per paese e timestamp):")
     df_final.printSchema()
@@ -75,6 +78,7 @@ if __name__ == "__main__":
 
     output_path_processed = "hdfs://namenode:8020/spark_data/spark"
     try:
+        # Scrittura su HDFS
         df_final.write \
             .partitionBy("country") \
             .mode("overwrite") \

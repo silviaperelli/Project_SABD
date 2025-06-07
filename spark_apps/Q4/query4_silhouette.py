@@ -3,7 +3,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.clustering import KMeans
-from pyspark.ml.evaluation import ClusteringEvaluator # Per Silhouette Score
+from pyspark.ml.evaluation import ClusteringEvaluator
 import os
 
 import sys
@@ -36,7 +36,7 @@ def read_df(spark_session, paths_to_read, target_year=2024):
     print(f"Lettura dati per clustering da {len(paths_to_read)} partizioni")
 
     try:
-        # Leggiamo tutti i dati disponibili per i paesi
+        # Lettura dei dati Parquet specificando una lista di path
         df_all_countries = spark_session.read.parquet(*paths_to_read)
 
         if df_all_countries.rdd.isEmpty():
@@ -48,7 +48,7 @@ def read_df(spark_session, paths_to_read, target_year=2024):
         print(f"Errore durante la lettura dei dati per clustering: {e}")
         raise
 
-    # Filtraggio per l'anno target e aggrega per calcolare la media annua di carbon_intensity
+    # Filtraggio per l'anno target e aggregazione annua di carbon_intensity
     df_annual_avg = df_all_countries.where(F.col("year") == target_year) \
         .groupBy("country_code") \
         .agg(F.avg("carbon_intensity").alias("avg_carbon_intensity")) \
@@ -63,11 +63,12 @@ def read_df(spark_session, paths_to_read, target_year=2024):
     assembler = VectorAssembler(
         inputCols=["avg_carbon_intensity"],
         outputCol="features",
-        handleInvalid="skip"  # Salta righe con valori nulli nella feature
+        handleInvalid="skip"
     )
     df_features = assembler.transform(df_annual_avg)
 
-    if df_features.count() < 2:  # K-Means necessita di almeno k punti (e k >= 2 per Silhouette)
+    # Verifica che K-Means abbia almeno 2 punti
+    if df_features.count() < 2:
         print("ERRORE: Non abbastanza dati validi dopo la preparazione delle feature per il clustering.")
         schema_output = "country_code STRING, avg_carbon_intensity_2024 DOUBLE, cluster_prediction INTEGER"
         return spark_session.createDataFrame([], schema_output), None, 0.0
@@ -77,20 +78,23 @@ def read_df(spark_session, paths_to_read, target_year=2024):
 def silhouette_score(spark_session, paths_to_read):
     start_time_tuning = time.time()
 
+    # Lettura dati da HDFS
     df_features = read_df(spark_session, paths_to_read)
 
-    df_features.cache()  # Cache perché lo useremo per trovare K e per il modello finale
+    df_features.cache()  # Memorizzazione in cache
 
     # Determinazione del K Ottimale (usando Silhouette Score)
     print("\nDeterminazione del K ottimale usando Silhouette Score...")
-    silhouette_scores = []
+    silhouette_scores = [] # Lista per memorizzare i valori di wcss per tutti i k
     schema_silhouette = "k INTEGER, silhouette_score DOUBLE"
-    # Il numero massimo di cluster non può superare il numero di campioni (paesi)
-    max_k_to_test = min(15, df_features.count())  # Testiamo fino a 15 cluster o num_paesi
+
+    # Intervallo di valori di k da testare da 2 al minimo tra 15 e il numero di campioni
+    max_k_to_test = min(15, df_features.count())
     k_values = range(2, max_k_to_test + 1)
 
     for k_test in k_values:
         try:
+            # Calcolo del Silhouette Score
             kmeans_test = KMeans().setK(k_test).setSeed(1).setFeaturesCol("features").setPredictionCol("prediction_test")
             model_test = kmeans_test.fit(df_features)
             predictions_test = model_test.transform(df_features)
@@ -99,7 +103,7 @@ def silhouette_score(spark_session, paths_to_read):
             silhouette_scores.append({"k": k_test, "silhouette_score": silhouette})
             print(f"  K={k_test}, silhouette_score={silhouette:.4f}")
         except Exception as e_k:
-            print(f"  Errore durante il test per K={k_test}: {e_k}")
+            print(f"ERRORE durante il test per K={k_test}: {e_k}")
             silhouette_scores.append({"k": k_test, "silhouette_score": -1})  # Valore indicativo di errore
 
     if not silhouette_scores:
@@ -114,7 +118,7 @@ def silhouette_score(spark_session, paths_to_read):
             best_k_row = valid_silhouette_df.orderBy(F.col("silhouette_score").desc()).first()
             if best_k_row:
                 optimal_k = best_k_row["k"]
-            else:  # Non dovrebbe accadere se valid_silhouette_results_df non è vuoto
+            else:
                 print("ERRORE: Impossibile determinare K ottimale. Impostazione K ottimale a 2 (default).")
                 optimal_k = 2
         else:
@@ -123,7 +127,7 @@ def silhouette_score(spark_session, paths_to_read):
 
         print(f"K ottimale scelto: {optimal_k} (basato su Silhouette Score)")
 
-    df_features.unpersist()  # Rilascia la cache
+    df_features.unpersist()  # Rimozione dalla cache
 
     end_time_tuning = time.time()
 
@@ -182,9 +186,9 @@ def query4_silhouette(num_executor):
     print(f"Tempo di esecuzione: {exec_time_tuning:.4f} secondi")
     print("----------------------------------------------------")
 
-    print(f"\nEsecuzione della Query Clustering per {N_RUN} volte...")
+    print(f"\nEsecuzione della Query Clustering con DataFrame per {N_RUN} volte...")
     for i in range(N_RUN):
-        print(f"\nEsecuzione Clustering - Run {i + 1}/{N_RUN}")
+        print(f"\nEsecuzione Clustering con DataFrame - Run {i + 1}/{N_RUN}")
         try:
             result_clustering_df, exec_time = run_query_clustering(spark, paths_to_read, optimal_k)
             execution_times_clustering.append(exec_time)
@@ -211,7 +215,7 @@ def query4_silhouette(num_executor):
             else:
                 print("DataFrame Silhouette Score è vuoto.")
 
-            print("\nRisultati finali del Clustering (paese, carbon_intensity_2024, cluster):")
+            print("\nRisultati finali del Clustering con Dataframe (paese, carbon_intensity_2024, cluster):")
             num_rows_clustering = final_output_clustering_df.count()
             if num_rows_clustering > 0:
                 final_output_clustering_df.show(n=num_rows_clustering, truncate=False)

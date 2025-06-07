@@ -3,27 +3,32 @@ import json
 import redis
 from pyspark.sql import SparkSession
 
-REDIS_HOST = "redis"  # Nome del servizio nel docker-compose
+REDIS_HOST = "redis"
 REDIS_PORT = 6379
 HDFS_BASE_PATH = "hdfs://namenode:8020/spark_data/spark"
 
-# crea e restituisce un client redis
+# Creazione client redis
 def get_redis_client():
     return redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
 
 
 def export_q1_to_redis(spark, r):
     print("\nEsportazione risultati Q1 su Redis...")
+
+    # Esportazione risultati query 1
     try:
         q1_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q1_results"), header=True, inferSchema=True)
 
-        collected_q1 = q1_df.collect() # raccolta dei dati sul driver Spark
-        pipe = r.pipeline() # pipeline Redis
-        for row in collected_q1: # itero sulle righe e accedo ai valori delle colonne 'date' e 'country_code'
-            key = f"q1:{row['date']}:{row['country_code']}" # costruisce la chiave Redis
-            value = json.dumps(row.asDict()) # serializza il dizionario Python in una stringa JSON
-            pipe.set(key, value) # accoda il comando SET <key> <value> alla pipeline ma non lo invia ancora a Redis
-        pipe.execute() # esecuzione della pipeline
+        # Raccolta dei dati sul driver Spark
+        collected_q1 = q1_df.collect()
+        pipe = r.pipeline() # Pipeline Redis
+        for row in collected_q1:
+            # Costruzione chiave Redis
+            key = f"q1:{row['date']}:{row['country_code']}"
+            # Serializzazione del dizionario Python in una stringa JSON come valore
+            value = json.dumps(row.asDict())
+            pipe.set(key, value)
+        pipe.execute()
         print(f"Q1: {len(collected_q1)} righe esportate.")
     except Exception as e:
         print(f"Errore durante l'esportazione di Q1: {e}")
@@ -32,7 +37,7 @@ def export_q1_to_redis(spark, r):
 def export_q2_to_redis(spark, r):
     print("\nEsportazione risultati Q2 su Redis...")
 
-    # 1. Classifiche (prime 5)
+    # Esportazione risultati query 2
     try:
         q2_ranks_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q2_results"), header=True, inferSchema=True)
 
@@ -44,7 +49,7 @@ def export_q2_to_redis(spark, r):
             rank_num = (i % 5) + 1
             if rank_type_idx < len(rank_types):
                 key = f"q2:italy:rank:{rank_types[rank_type_idx]}:{rank_num}"
-                value = json.dumps(row.asDict())  # Contiene 'date', 'carbon_intensity', 'cfe'
+                value = json.dumps(row.asDict())
                 pipe.set(key, value)
         pipe.execute()
         print(f"Q2 Ranks: {len(collected_q2_ranks)} righe esportate.")
@@ -52,14 +57,14 @@ def export_q2_to_redis(spark, r):
     except Exception as e:
         print(f"Errore durante l'esportazione delle classifiche Q2: {e}")
 
-    # 2. Dati per i grafici di Q2 (medie mensili per l'Italia)
+    # Esportazione dati per i grafici di query 2 (medie mensili per l'Italia)
     try:
         monthly_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q2_graphs"), header=True, inferSchema=True)
 
         collected_q2_monthly = monthly_df.collect()
         pipe = r.pipeline()
         for row in collected_q2_monthly:
-            key = f"q2:italy:monthly_avg:{row['date']}"  # es. q2:italy:monthly_avg:2022_12
+            key = f"q2:italy:monthly_avg:{row['date']}"
             value = json.dumps(row.asDict())
             pipe.set(key, value)
         pipe.execute()
@@ -72,7 +77,7 @@ def export_q2_to_redis(spark, r):
 def export_q3_to_redis(spark, r):
     print("\nEsportazione risultati Q3 su Redis...")
 
-    # 1. Statistiche
+    # Esportazione risultati query 3
     try:
         q3_stats_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q3_results"), header=True, inferSchema=True)
 
@@ -90,17 +95,16 @@ def export_q3_to_redis(spark, r):
     except Exception as e:
         print(f"Errore durante l'esportazione delle statistiche Q3: {e}")
 
-    # 2. Dati per i grafici di Q3 (medie orarie per IT e SE) - MODIFICATO
+    # Esportazione dati per i grafici di query 3 (medie orarie per Italia e Svezia)
     try:
         hourly_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q3_graphs"), header=True, inferSchema=True)
-        # Assicurati che hourly_df abbia le colonne: country_code, hour, avg_carbon_intensity, avg_cfe
 
         collected_q3_hourly = hourly_df.collect()
         pipe = r.pipeline()
         for row in collected_q3_hourly:
             country = row['country_code']
-            hour_val = int(row['hour'])  # Assicurati che hour sia un intero per il formato :02d
-            hour_str_padded = f"{hour_val:02d}"  # Es. "00", "01", ..., "23"
+            hour_val = int(row['hour'])
+            hour_str_padded = f"{hour_val:02d}"
             artificial_timestamp = f"2021-01-01T{hour_str_padded}:00:00Z"
 
             data_to_store = row.asDict()
@@ -118,6 +122,8 @@ def export_q3_to_redis(spark, r):
 
 def export_q4_silhouette_to_redis(spark, r):
     print("\nEsportazione Risultati Clustering con Silhouette Score su Redis...")
+
+    # Esportazione risultati query 4 con Silhouette Score
     try:
         clustering_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q4_silhouette_results"), header=True, inferSchema=True)
         silhouette_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "silhouette_values"), header=True, inferSchema=True)
@@ -154,6 +160,8 @@ def export_q4_silhouette_to_redis(spark, r):
 
 def export_q4_elbow_to_redis(spark, r):
     print("\nEsportazione Risultati Clustering con Elbow Method su Redis...")
+
+    # Esportazione risultati query 4 con Elbow Method
     try:
         clustering_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "Q4_elbow_results"), header=True, inferSchema=True)
         elbow_df = spark.read.csv(os.path.join(HDFS_BASE_PATH, "elbow_values"), header=True, inferSchema=True)
@@ -189,6 +197,8 @@ def export_q4_elbow_to_redis(spark, r):
 
 def export_performance_to_redis(spark, r):
     print("\nEsportazione dati di performance su Redis...")
+
+    # Esportazione dati di performance
     total_rows_exported = 0
 
     query_data_path = os.path.join(HDFS_BASE_PATH, "performance/*/*/*/*.csv")
@@ -219,7 +229,6 @@ def export_performance_to_redis(spark, r):
     print(f"Esportazione completata. Totale righe esportate su Redis: {total_rows_exported}")
 
 def hdfs_path_exists(spark_session, path):
-    # path should be "hdfs://namenode:8020/..."
     sc = spark_session.sparkContext
     uri = sc._jvm.java.net.URI(path)
     fs = sc._jvm.org.apache.hadoop.fs.FileSystem.get(uri, sc._jsc.hadoopConfiguration())
@@ -232,11 +241,11 @@ if __name__ == "__main__":
 
     spark.sparkContext.setLogLevel("WARN")
 
-    # ottiene il client Redis e testa la connessione
+    # Connessione con client Redis
     redis_client = None
     try:
         redis_client = get_redis_client()
-        redis_client.ping()  # verifica connessione inviando un ping
+        redis_client.ping()
         print("Connesso a Redis!")
     except redis.exceptions.ConnectionError as e:
         print(f"Impossibile connettersi a Redis: {e}")

@@ -52,7 +52,7 @@ def run_query3(spark_session, paths_to_read):
 
     print(f"Lettura dati dalle partizioni specifiche in HDFS: {paths_to_read}")
     try:
-        # Leggi i dati Parquet specificando una lista di path
+        # Lettura dei dati Parquet specificando una lista di path
         df_processed = spark_session.read.parquet(*paths_to_read)
 
         if df_processed.rdd.isEmpty():
